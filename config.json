@@ -1,0 +1,22 @@
+{
+  "harnessRoot": "D:/dev/agent/dsh/deepseek-harness",
+  "command": null,
+  "nodeBin": "node",
+  "port": 3080,
+  "extraArgs": [],
+  "env": {},
+  "window": {
+    "width": 1280,
+    "height": 860
+  },
+  "theme": {
+    "enabled": true,
+    "name": "marisa"
+  },
+  "pet": {
+    "enabled": true,
+    "width": 240,
+    "height": 280,
+    "statsIntervalMs": 2000
+  }
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>DeepSeek Harness Desktop</title>
+  <link rel="stylesheet" href="loading.css" />
+</head>
+<body>
+  <main class="card">
+    <header>
+      <div class="logo">DSH</div>
+      <div class="titles">
+        <h1>DeepSeek Harness</h1>
+        <p class="subtitle">桌面外壳 · 正在启动 Web 服务…</p>
+      </div>
+    </header>
+
+    <div class="status-row">
+      <span id="statusDot" class="dot starting"></span>
+      <span id="statusText" class="status-text">启动中…</span>
+      <span id="statusUrl" class="status-url"></span>
+    </div>
+
+    <div id="errorBox" class="error-box" hidden>
+      <strong>启动失败</strong>
+      <p id="errorText"></p>
+    </div>
+
+    <details class="log-details" open>
+      <summary>服务日志</summary>
+      <pre id="log" class="log"></pre>
+    </details>
+
+    <footer>
+      <button id="restartBtn" class="btn">重启服务</button>
+      <button id="quitBtn" class="btn danger">退出</button>
+    </footer>
+  </main>
+  <script src="loading.js"></script>
+</body>
+</html>

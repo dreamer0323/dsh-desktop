@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Marisa Pet</title>
+  <link rel="stylesheet" href="pet.css" />
+</head>
+<body>
+  <div class="stage">
+    <div id="bubble" class="bubble" hidden>
+      <span id="bubbleText"></span>
+    </div>
+
+    <div id="mascot" class="mascot" title="按住拖动">
+      <!-- Fallback mascot (original placeholder: witch hat + star + face).
+           Shown only until you drop sprite frames into assets/pet/. -->
+      <svg class="mascot-svg" viewBox="0 0 120 150" aria-hidden="true">
+        <g class="star">
+          <path d="M60 20 L69 47 L97 50 L74 66 L80 94 L60 79 L40 94 L46 66 L23 50 L51 47 Z"
+                fill="#f6b93f" stroke="#ffe08a" stroke-width="2" stroke-linejoin="round"/>
+        </g>
+        <g class="hat">
+          <ellipse cx="60" cy="64" rx="36" ry="9" fill="#171224" stroke="#f6b93f" stroke-width="2"/>
+          <path d="M60 10 L94 60 Q60 52 26 60 Z" fill="#171224" stroke="#f6b93f" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="38" y="56" width="44" height="6" rx="3" fill="#f6b93f"/>
+        </g>
+        <g class="face">
+          <circle cx="60" cy="92" r="27" fill="#ffe0c2" stroke="#171224" stroke-width="2"/>
+          <path d="M47 88 Q51 84 55 88" fill="none" stroke="#171224" stroke-width="2" stroke-linecap="round"/>
+          <path d="M65 88 Q69 84 73 88" fill="none" stroke="#171224" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="44" cy="98" r="3.5" fill="#ff9f9f" opacity="0.7"/>
+          <circle cx="76" cy="98" r="3.5" fill="#ff9f9f" opacity="0.7"/>
+          <path d="M54 104 Q60 110 66 104" fill="none" stroke="#171224" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </svg>
+
+      <!-- Sprite-frame surface (populated by pet.js when frames exist). -->
+      <div id="sprite" class="sprite" hidden></div>
+
+      <div id="statsPill" class="stats-pill">内存 -- · CPU --</div>
+    </div>
+  </div>
+  <script src="pet.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <!-- Placeholder background: deep violet night with golden magic sparks.
+       Replace with your own licensed Marisa fan art (PNG/WebP/JPG). -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#2a1f42"/>
+      <stop offset="55%" stop-color="#171126"/>
+      <stop offset="100%" stop-color="#0d0a15"/>
+    </radialGradient>
+    <radialGradient id="spark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe08a"/>
+      <stop offset="60%" stop-color="#f6b93f"/>
+      <stop offset="100%" stop-color="#f6b93f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <g fill="#f6b93f" opacity="0.85">
+    <circle cx="230" cy="180" r="2.2"/>
+    <circle cx="640" cy="120" r="1.6"/>
+    <circle cx="1010" cy="240" r="2.4"/>
+    <circle cx="1380" cy="140" r="1.8"/>
+    <circle cx="1660" cy="300" r="2.6"/>
+    <circle cx="300" cy="560" r="1.5"/>
+    <circle cx="150" cy="820" r="2.0"/>
+    <circle cx="560" cy="920" r="1.7"/>
+    <circle cx="1180" cy="880" r="2.1"/>
+    <circle cx="1750" cy="760" r="1.9"/>
+    <circle cx="900" cy="520" r="1.5"/>
+    <circle cx="1520" cy="620" r="1.4"/>
+    <circle cx="80" cy="340" r="1.7"/>
+  </g>
+  <g fill="#fff" opacity="0.5">
+    <circle cx="420" cy="320" r="1.0"/>
+    <circle cx="780" cy="80" r="1.0"/>
+    <circle cx="1240" cy="400" r="1.0"/>
+    <circle cx="1850" cy="480" r="1.0"/>
+    <circle cx="700" cy="700" r="1.0"/>
+    <circle cx="1620" cy="940" r="1.0"/>
+  </g>
+  <circle cx="960" cy="430" r="90" fill="url(#spark)" opacity="0.5"/>
+  <circle cx="240" cy="880" r="46" fill="url(#spark)" opacity="0.35"/>
+  <circle cx="1660" cy="240" r="58" fill="url(#spark)" opacity="0.35"/>
+</svg>
