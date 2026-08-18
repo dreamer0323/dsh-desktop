@@ -2,7 +2,7 @@
 
 /**
  * Preload for the desktop pet window. Exposes a minimal receive-only bridge:
- * the pet never gets Node access, only stats + turn events pushed by main.
+ * stats / turn / event / config, all pushed by main. No chat, no voice.
  */
 
 const { contextBridge, ipcRenderer } = require('electron')
@@ -16,4 +16,6 @@ function subscribe(channel, cb) {
 contextBridge.exposeInMainWorld('pet', {
   onStats: (cb) => subscribe('pet:stats', cb),
   onTurn: (cb) => subscribe('pet:turn', cb),
+  onEvent: (cb) => subscribe('pet:event', cb),
+  onConfig: (cb) => subscribe('pet:config', cb),
 })

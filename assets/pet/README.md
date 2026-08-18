@@ -1,14 +1,19 @@
-# 桌面宠物精灵图
+# 桌面宠物素材
 
-把你**拥有使用权**的魔理沙序列帧放到这个目录，按 `姿势-序号.png` 命名。
-帧数 / 帧率在 `ui/pet.js` 顶部的 `SPRITES` 清单里调整。
+pet v3 已从「精灵图动画」改为**静态单帧**：桌面宠物就是一只 Marisa Fumo（雾雨魔理沙玩偶）。
 
-```
-idle-0.png  idle-1.png  idle-2.png  idle-3.png   # 待机（默认 4 帧，5 fps）
-speak-0.png speak-1.png                          # 说话（默认 2 帧，7 fps）
-happy-0.png happy-1.png                          # 开心（默认 2 帧，7 fps）
-```
+## 当前素材
 
-- 建议使用透明背景 PNG，尺寸约 240×280（与窗口一致）。
-- 未放置任何帧时，自动显示内置 SVG 兜底吉祥物。
-- 命名中的 `-N` 从 0 开始连续编号。
+- `marisa-fumo.png` —— 宠物形象本体（透明背景 PNG，800×800）。
+  源图来自 `image/marisa-fumo.webp`，经 `make-fumo.cjs` 边缘泛洪抠背景成透明图。
+  重新处理：`node assets/pet/make-fumo.cjs`
+- 换图：直接覆盖 `marisa-fumo.png`（建议 1:1 方形、透明背景），宠物窗口自动生效。
+
+## 已废弃：动画帧（legacy-anim/）
+
+旧精灵图方案（`idle/speak/happy` 序列帧 + `make-frames.cjs` 生成器）已放弃，
+归档在 `assets/pet/legacy-anim/` 备查。宠物渲染层不再读取这些帧。
+
+## pet_skill/
+
+第三方工具 / skill / MCP 参数配置，见 [pet_skill/README.md](pet_skill/README.md)。

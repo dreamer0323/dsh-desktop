@@ -35,9 +35,12 @@ const DEFAULTS = {
   // Desktop pet (transparent always-on-top companion window).
   pet: {
     enabled: true,
-    width: 240,
-    height: 280,
+    width: 300,
+    height: 400,
     statsIntervalMs: 2000,
+    // Feature toggles (each false hides the corresponding pet capability).
+    tokens: { enabled: true },    // live token-usage pill
+    notify: { enabled: true },    // approval / turn-complete reminders
   },
 }
 
@@ -65,7 +68,12 @@ function loadConfig() {
     window: { ...defaults.window, ...(user.window || {}) },
     env: { ...(user.env || {}) },
     theme: { ...defaults.theme, ...(user.theme || {}) },
-    pet: { ...defaults.pet, ...(user.pet || {}) },
+    pet: {
+      ...defaults.pet,
+      ...(user.pet || {}),
+      tokens: { ...defaults.pet.tokens, ...((user.pet || {}).tokens || {}) },
+      notify: { ...defaults.pet.notify, ...((user.pet || {}).notify || {}) },
+    },
   }
   if (merged.port !== 'auto') {
     const n = Number(merged.port)

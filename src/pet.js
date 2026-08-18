@@ -63,6 +63,18 @@ function createPetWindow(cfg) {
 
   void petWin.loadFile(petPath())
 
+  // Hand the feature toggles to the pet window so the UI can honor them.
+  petWin.webContents.once('did-finish-load', () => {
+    if (petWin && !petWin.isDestroyed()) {
+      try {
+        petWin.webContents.send('pet:config', {
+          tokens: !!(petCfg.tokens && petCfg.tokens.enabled),
+          notify: !!(petCfg.notify && petCfg.notify.enabled),
+        })
+      } catch (err) { /* ignore */ }
+    }
+  })
+
   // Anchor to the primary display's bottom-right corner with a small margin.
   const wa = screen.getPrimaryDisplay().workArea
   const x = wa.x + wa.width - width - 16
@@ -101,10 +113,37 @@ function notifyTurn(event) {
   }
 }
 
+/** Forward a generic pet event (tokens / authorization / chat reply). */
+function notifyPetEvent(event) {
+  if (petWin && !petWin.isDestroyed()) {
+    try { petWin.webContents.send('pet:event', event) } catch (err) { /* ignore */ }
+  }
+}
+
 function closePetWindow() {
   if (petWin && !petWin.isDestroyed()) petWin.destroy()
   petWin = null
   stopStats()
 }
 
-module.exports = { createPetWindow, closePetWindow, notifyTurn, getPetWindow: () => petWin }
+/** Show / hide the pet window (sidebar toggle). */
+function setPetVisible(visible) {
+  if (!petWin || petWin.isDestroyed()) return false
+  if (visible) {
+    petWin.show()
+    petWin.focus()
+  } else {
+    petWin.hide()
+  }
+  return true
+}
+
+/** Current pet visibility (true when the window exists and is shown). */
+function getPetVisible() {
+  return !!petWin && !petWin.isDestroyed() && petWin.isVisible()
+}
+
+module.exports = {
+  createPetWindow, closePetWindow, notifyTurn, notifyPetEvent,
+  setPetVisible, getPetVisible, getPetWindow: () => petWin,
+}

@@ -1,12 +1,12 @@
 'use strict'
 
-const { app, BrowserWindow, ipcMain, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, shell, Notification } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
 const { loadConfig } = require('./config')
 const { DshServer } = require('./server')
 const { injectMarisaTheme } = require('./theme')
-const { createPetWindow, closePetWindow, notifyTurn } = require('./pet')
+const { createPetWindow, closePetWindow, notifyTurn, notifyPetEvent, setPetVisible, getPetVisible } = require('./pet')
 
 const cfg = loadConfig()
 
@@ -148,6 +148,41 @@ ipcMain.handle('dsh:get-state', () => ({
 ipcMain.on('dsh:restart', () => { void restartServer() })
 ipcMain.on('dsh:quit', () => { app.quit() })
 ipcMain.on('dsh:turn', (_event, turn) => { notifyTurn(turn) })
+
+/** General pet events from the injected theme runtime (tokens / auth). */
+ipcMain.on('dsh:pet', (_event, payload) => {
+  notifyPetEvent(payload)
+  // A pending approval blocks the agent — raise an OS notification so the
+  // user notices even if the window is in the background.
+  if (payload && payload.kind === 'auth' && payload.pending) {
+    showSystemNotify('魔理沙 · 需要确认', (payload.reason || 'agent 请求授权') + '，请回桌面窗口确认')
+  }
+})
+
+function showSystemNotify(title, body) {
+  if (!Notification.isSupported()) return
+  try {
+    const n = new Notification({ title, body, silent: true })
+    n.on('click', () => {
+      if (win && !win.isDestroyed()) { win.show(); win.focus() }
+    })
+    n.show()
+  } catch (err) { /* ignore */ }
+}
+
+/** Push current pet visibility to the harness page (sidebar toggle state). */
+function broadcastPetState() {
+  if (win && !win.isDestroyed()) {
+    try { win.webContents.send('dsh:pet-state-push', { visible: getPetVisible() }) } catch (err) { /* ignore */ }
+  }
+}
+
+/** Sidebar toggle: show / hide the pet window. */
+ipcMain.on('dsh:pet-toggle', () => {
+  setPetVisible(!getPetVisible())
+  broadcastPetState()
+})
+ipcMain.handle('dsh:pet-state', () => ({ visible: getPetVisible() }))
 
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {

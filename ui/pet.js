@@ -1,102 +1,52 @@
 /*
- * Desktop pet runtime (pet window). Two rendering modes:
- *   1. Sprite frames — drop your licensed Marisa art as
- *      assets/pet/<pose>-<n>.png and this cycles them per pose.
- *   2. Fallback mascot — the inline SVG/CSS witch hat + star (shown until
- *      frames exist; remove it by providing the frames).
- *
- * Stats and turn reminders arrive over the preload bridge (window.pet).
+ * Desktop pet v4 runtime (pet window) — static Marisa Fumo, no chat, no voice.
+ *   - Stats / token pill (pushed by main)
+ *   - Turn lifecycle → completion notice ("回答完毕") / error
+ *   - Authorization takeover → red banner
  */
 ;(function () {
   'use strict'
 
-  /* ── Sprite sheet manifest ───────────────────────────────────────────
-   * Frames live in assets/pet/ (relative to ui/, so ../assets/pet/).
-   * idle-0.png … idle-3.png cycle as the resting animation; speak/happy are
-   * short 2-frame loops. Adjust counts/fps to match your art. */
-  var SPRITES = {
-    idle:  { dir: '../assets/pet/', name: 'idle',  ext: '.png', count: 4, fps: 5 },
-    speak: { dir: '../assets/pet/', name: 'speak', ext: '.png', count: 2, fps: 7 },
-    happy: { dir: '../assets/pet/', name: 'happy', ext: '.png', count: 2, fps: 7 },
-  }
-
-  var mascotEl = document.getElementById('mascot')
-  var mascotSvg = document.querySelector('.mascot-svg')
-  var spriteEl = document.getElementById('sprite')
   var bubble = document.getElementById('bubble')
   var bubbleText = document.getElementById('bubbleText')
   var statsPill = document.getElementById('statsPill')
+  var tokenPill = document.getElementById('tokenPill')
+  var tokenMini = document.getElementById('tokenMini')
 
-  var pose = 'idle'
-  var frames = null
-  var timer = null
-  var frameIndex = 0
-  var hideTimer = null
+  var authBanner = null
+  var lastTokens = null
 
-  function preloadPose(def) {
-    return new Promise(function (resolve) {
-      if (!def.count) return resolve([])
-      var imgs = []
-      var failed = false
-      var pending = def.count
-      for (var i = 0; i < def.count; i++) {
-        var img = new Image()
-        img.onload = function () { if (--pending === 0) resolve(failed ? null : imgs) }
-        img.onerror = function () { failed = true; if (--pending === 0) resolve(null) }
-        img.src = def.dir + def.name + '-' + i + def.ext
-        imgs.push(img)
+  /* Feature toggles pushed by main (pet:config). */
+  var CFG = { tokens: true, notify: true }
+  if (window.pet && window.pet.onConfig) {
+    window.pet.onConfig(function (c) {
+      if (!c) return
+      CFG.tokens = typeof c.tokens === 'boolean' ? c.tokens : CFG.tokens
+      CFG.notify = typeof c.notify === 'boolean' ? c.notify : CFG.notify
+      if (!CFG.tokens) {
+        tokenPill.hidden = true
+        tokenMini.hidden = true
+        document.getElementById('statusBar').hidden = true
       }
     })
   }
 
-  async function loadFrames() {
-    var all = {}
-    for (var name in SPRITES) {
-      var f = await preloadPose(SPRITES[name])
-      if (!f) return null
-      all[name] = f
-    }
-    return all
-  }
-
-  function startSprite(all) {
-    frames = all
-    mascotSvg.style.display = 'none'
-    spriteEl.hidden = false
-    tick()
-  }
-
-  function startFallback() {
-    // Keep the SVG mascot visible; frames are simply absent.
-  }
-
-  function tick() {
-    if (!frames) return
-    var def = SPRITES[pose]
-    var imgs = frames[pose]
-    frameIndex = (frameIndex + 1) % imgs.length
-    spriteEl.style.backgroundImage = 'url("' + imgs[frameIndex].src + '")'
-    timer = setTimeout(tick, 1000 / def.fps)
-  }
-
-  function setPose(p) {
-    pose = SPRITES[p] ? p : 'idle'
-    frameIndex = 0
-  }
-
-  function showBubble(text, autoMs) {
+  /* ── Bubble ──────────────────────────────────────────────────────── */
+  var hideTimer = null
+  function showBubble(text, autoMs, cls) {
     bubbleText.textContent = text
+    bubble.className = 'bubble' + (cls ? ' ' + cls : '')
     bubble.hidden = false
     if (hideTimer) clearTimeout(hideTimer)
     if (autoMs) hideTimer = setTimeout(hideBubble, autoMs)
   }
-
   function hideBubble() {
     bubble.hidden = true
+    bubble.className = 'bubble'
     hideTimer = null
   }
 
-  /* ── Stats bridge ─────────────────────────────────────────────────── */
+  /* ── Stats bridge ────────────────────────────────────────────────── */
   if (window.pet && window.pet.onStats) {
     window.pet.onStats(function (s) {
       if (!s) return
@@ -104,28 +54,68 @@
     })
   }
 
-  /* ── Turn-lifecycle bridge (phase 4) ───────────────────────────────── */
-  if (window.pet && window.pet.onTurn) {
-    window.pet.onTurn(function (t) {
-      if (!t || !t.state) return
-      if (t.state === 'start') {
-        setPose('speak')
-        var est = t.estimateMs != null ? '（预计 ' + (t.estimateMs / 1000).toFixed(0) + 's）' : ''
-        showBubble('开始生成…' + est)
-      } else if (t.state === 'done') {
-        setPose('happy')
-        var secs = t.elapsedMs != null ? (t.elapsedMs / 1000).toFixed(1) + 's' : '--'
-        showBubble('生成完成～ 用时 ' + secs, 5000)
-        setTimeout(function () { setPose('idle') }, 5200)
-      } else if (t.state === 'error') {
-        setPose('speak')
-        showBubble('生成出错了…', 5000)
+  /* ── Token display ───────────────────────────────────────────────── */
+  function fmtTokens(v) {
+    if (v == null) return '--'
+    return v < 1000 ? String(v) : (v / 1000).toFixed(1) + 'K'
+  }
+  function setTokens(u) {
+    lastTokens = u
+    if (!u) return
+    document.getElementById('statusBar').hidden = false
+    tokenPill.textContent = 'tokens 输入 ' + fmtTokens(u.input) + ' · 输出 ' + fmtTokens(u.output)
+    tokenMini.textContent = '⚡ ' + fmtTokens(u.input) + ' / ' + fmtTokens(u.output)
+    tokenMini.hidden = false
+  }
+
+  /* ── Auth alert banner ───────────────────────────────────────────── */
+  function showAuthBanner(info) {
+    if (!authBanner) {
+      authBanner = document.createElement('div')
+      authBanner.className = 'auth-banner'
+      var label = document.createElement('span')
+      label.className = 'auth-label'
+      var closeBtn = document.createElement('button')
+      closeBtn.className = 'auth-close'
+      closeBtn.textContent = '知道了'
+      closeBtn.addEventListener('click', function () { if (authBanner) { authBanner.remove(); authBanner = null } })
+      authBanner.appendChild(label)
+      authBanner.appendChild(closeBtn)
+      document.body.appendChild(authBanner)
+    }
+    authBanner.querySelector('.auth-label').textContent =
+      '需要你确认：' + (info && info.reason ? info.reason : 'agent 请求授权')
+    showBubble('喂！有操作需要你确认，别发呆だぜ！', 8000, 'bubble--auth')
+  }
+  function hideAuthBanner() {
+    if (authBanner) { authBanner.remove(); authBanner = null }
+    hideBubble()
+  }
+
+  /* ── Event bridge (tokens / auth) ────────────────────────────────── */
+  if (window.pet && window.pet.onEvent) {
+    window.pet.onEvent(function (ev) {
+      if (!ev || !ev.kind) return
+      if (ev.kind === 'tokens') {
+        if (CFG.tokens) setTokens(ev)
+      } else if (ev.kind === 'auth') {
+        if (CFG.notify) {
+          if (ev.pending) showAuthBanner(ev)
+          else hideAuthBanner()
+        }
       }
     })
   }
 
-  loadFrames().then(function (all) {
-    if (all) startSprite(all)
-    else startFallback()
-  })
+  /* ── Turn-lifecycle bridge (completion notice / error) ───────────── */
+  if (window.pet && window.pet.onTurn) {
+    window.pet.onTurn(function (t) {
+      if (!t || !t.state || !CFG.notify) return
+      if (t.state === 'done') {
+        showBubble('回答完毕', 3000)
+      } else if (t.state === 'error') {
+        showBubble('生成出错了…', 5000)
+      }
+    })
+  }
 })()

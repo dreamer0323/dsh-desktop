@@ -6,3 +6,6 @@ config.local.json
 
 # Claude Code local settings (machine-specific, untracked)
 .claude/settings.json
+
+# 本地参考素材 / AI 生成图（非分发内容，勿提交公开仓库）
+image/

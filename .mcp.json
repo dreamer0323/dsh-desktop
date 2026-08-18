@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "image-gen": {
+      "command": "node",
+      "args": ["assets/pet/pet_skill/image-gen/server.mjs"]
+    }
+  }
+}

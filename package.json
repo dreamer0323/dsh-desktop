@@ -1,13 +1,16 @@
 {
   "name": "dsh-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Desktop wrapper for DeepSeek Harness (dsh web) — run the Web UI in a native window without opening a browser.",
   "private": true,
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node test/theme-smoke.js && node test/pet-inject.test.js && node test/run-pet-render.cjs",
     "test:server": "node test/server-smoke.mjs",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "release": "node scripts/release.mjs",
+    "release:dry": "node scripts/release.mjs --dry-run"
   },
   "devDependencies": {
     "electron": "^43.4.0",

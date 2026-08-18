@@ -61,7 +61,7 @@ function readAsset(rel) {
 
 /** Sound map injected as window.__DSH_THEME_SOUNDS__ (data: URIs or null). */
 function buildSoundMap() {
-  const sounds = { click: null, hover: null, complete: null, error: null }
+  const sounds = { click: null, hover: null, complete: null, error: null, auth: null, ding: null }
   const dir = path.join(THEME_DIR, 'sounds')
   for (const name of Object.keys(sounds)) {
     for (const ext of ['.mp3', '.wav', '.ogg', '.m4a']) {

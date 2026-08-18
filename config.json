@@ -15,8 +15,10 @@
   },
   "pet": {
     "enabled": true,
-    "width": 240,
-    "height": 280,
-    "statsIntervalMs": 2000
+    "width": 300,
+    "height": 400,
+    "statsIntervalMs": 2000,
+    "tokens": { "enabled": true },
+    "notify": { "enabled": true }
   }
 }

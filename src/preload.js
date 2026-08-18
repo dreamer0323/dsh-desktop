@@ -18,4 +18,10 @@ contextBridge.exposeInMainWorld('dsh', {
   quit: () => ipcRenderer.send('dsh:quit'),
   // Turn-lifecycle events (the theme runtime reports generation start/done).
   notifyTurn: (event) => ipcRenderer.send('dsh:turn', event),
+  // General pet events (tokens / authorization / chat reply) forwarded to the pet.
+  notifyPet: (event) => ipcRenderer.send('dsh:pet', event),
+  // Sidebar pet toggle (injected theme UI).
+  togglePet: () => ipcRenderer.send('dsh:pet-toggle'),
+  getPetState: () => ipcRenderer.invoke('dsh:pet-state'),
+  onPetState: (cb) => subscribe('dsh:pet-state-push', cb),
 })

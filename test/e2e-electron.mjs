@@ -32,9 +32,14 @@ function fail(msg) {
   setTimeout(() => { rmSync(home, { recursive: true, force: true }); process.exit(1) }, 300)
 }
 
+// ELECTRON_RUN_AS_NODE in the parent shell would turn electron.exe into plain
+// Node; a real runtime needs it cleared.
+const env = { ...process.env, DSH_HOME: home, DSH_HARNESS_ROOT: 'D:/dev/agent/dsh/deepseek-harness' }
+delete env.ELECTRON_RUN_AS_NODE
+
 const child = spawn(electronBin, ['.'], {
   cwd: root,
-  env: { ...process.env, DSH_HOME: home, DSH_HARNESS_ROOT: 'D:/dev/agent/dsh/deepseek-harness' },
+  env,
   stdio: ['ignore', 'pipe', 'pipe'],
   windowsHide: true,
 })
