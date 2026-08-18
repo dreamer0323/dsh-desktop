@@ -3,3 +3,6 @@ release/
 dist/
 *.log
 config.local.json
+
+# Claude Code local settings (machine-specific, untracked)
+.claude/settings.json
