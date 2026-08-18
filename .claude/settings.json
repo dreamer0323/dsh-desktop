@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sS -m 30 \"https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=Kirisame+Marisa&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url|mime|size&format=json\" -o /tmp/commons.json -w \"HTTP %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(echo \"exit=$?\")",
+      "Read(//tmp/**)",
+      "Read(//c/Users/31625/**)",
+      "Bash(netstat -ano)"
+    ]
+  }
+}

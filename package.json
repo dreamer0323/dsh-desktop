@@ -22,6 +22,7 @@
     "files": [
       "src/**/*",
       "ui/**/*",
+      "assets/**/*",
       "config.json",
       "package.json"
     ],

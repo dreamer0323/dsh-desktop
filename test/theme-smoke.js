@@ -31,7 +31,7 @@ Promise.resolve(p).then(() => {
   assert.ok(calls.js, 'injected JS payload present')
   assert.ok(calls.js.includes('__DSH_THEME_SOUNDS__'), 'sound map injected')
   assert.ok(calls.css, 'injected CSS present')
-  assert.ok(calls.css.includes('data:image/svg+xml;base64,'), 'background url inlined as data URI')
+  assert.ok(calls.css.includes('data:image/jpeg;base64,'), 'background url inlined as data URI (jpeg)')
   assert.ok(!/url\(\s*["']?images\//.test(calls.css), 'no unresolved relative image urls remain')
   console.log('theme-smoke: OK (js=%d bytes, css=%d bytes)', calls.js.length, calls.css.length)
 }).catch((err) => {
