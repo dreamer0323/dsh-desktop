@@ -142,7 +142,8 @@ body[data-ds-marisa] {
   background-color: #0d0a15;
   background-image:
     linear-gradient(rgba(11, 7, 19, 0.62), rgba(11, 7, 19, 0.62)),
-    url("images/background.svg");
+    /* Marisa fan art — source: safebooru.org post #(kirisame_marisa solo), artist amamiyayk */
+    url("images/background.jpg");
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
