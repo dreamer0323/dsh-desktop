@@ -1,5 +1,5 @@
 {
-  "harnessRoot": "D:/dev/agent/dsh/deepseek-harness",
+  "harnessRoot": "",
   "command": null,
   "nodeBin": "node",
   "port": 3080,

@@ -19,10 +19,13 @@ function configFile() {
 }
 
 const DEFAULTS = {
-  // The DeepSeek Harness repository checkout the wrapper launches.
-  // Point this at your checkout, or override via the DSH_HARNESS_ROOT env var.
+  // The DeepSeek Harness repository checkout the wrapper launches. Kept empty on
+  // purpose: resolveHarness() (src/detect.js) discovers a working dsh at startup
+  // — explicit config.command, then a harnessRoot checkout, then a bounded
+  // filesystem search, then the npm package via npx. Override explicitly with
+  // the DSH_HARNESS_ROOT env var if auto-discovery misses your checkout.
   // Forward slashes work fine on Windows.
-  harnessRoot: 'D:/dev/agent/dsh/deepseek-harness',
+  harnessRoot: '',
   // Optional full override of the launch command (array form avoids quoting):
   //   ["npx", "@deepseek-ai/dsh", "web"]
   // Leave null to auto-build:  <nodeBin> --import tsx/esm apps/cli/src/bin.ts web
