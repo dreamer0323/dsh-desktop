@@ -81,6 +81,8 @@ h1 { margin: 0; font-size: 22px; font-weight: 700; }
 .status-text { font-size: 15px; font-weight: 600; }
 .status-url { margin-left: auto; color: var(--accent); font-size: 13px; font-family: Consolas, monospace; }
 
+.status-msg { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
 .error-box {
   background: rgba(248, 81, 73, 0.08);
   border: 1px solid rgba(248, 81, 73, 0.35);

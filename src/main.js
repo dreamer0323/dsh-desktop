@@ -3,9 +3,11 @@
 const { app, BrowserWindow, ipcMain, shell, Notification, dialog } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
-const { loadConfig, writeConfig } = require('./config')
+const { spawn } = require('node:child_process')
+const { loadConfig, writeConfig, configFile } = require('./config')
 const { DshServer } = require('./server')
 const themeApi = require('./theme')
+const detect = require('./detect')
 const { expandParams, FIELD_DEFS, DEFAULT_FRIENDLY, FRIENDLY_KEYS } = require('./theme-params')
 const { createPetWindow, closePetWindow, notifyTurn, notifyPetEvent, setPetVisible, getPetVisible, reloadPetWindow } = require('./pet')
 
@@ -15,6 +17,7 @@ let win = null
 let server = null
 let readyUrl = null
 let lastStatus = { state: 'starting' }
+let detectPending = false
 
 const logs = []
 const MAX_LOGS = 1000
@@ -101,13 +104,20 @@ function createWindow() {
   void win.loadFile(loadingPath())
 }
 
-function startServer() {
-  if (server) return
-
-  if (!cfg.harnessRoot || !fs.existsSync(path.join(cfg.harnessRoot, 'package.json'))) {
-    pushLog('[dsh-desktop] WARNING: harnessRoot does not look like a harness checkout (no package.json). Check config.json.')
+/** Persist a detection patch back to cfg + config.json when it changes. */
+function applyDetectPatch(patch) {
+  if (!patch) return false
+  const before = JSON.stringify([cfg.harnessRoot, cfg.command])
+  cfg = detect.applyPatch(cfg, patch)
+  const after = JSON.stringify([cfg.harnessRoot, cfg.command])
+  if (before !== after) {
+    writeConfig({ harnessRoot: cfg.harnessRoot, command: cfg.command })
+    return true
   }
+  return false
+}
 
+function launchHarness() {
   server = new DshServer(cfg)
   server.on('log', (line) => pushLog(line))
   server.on('status', (s) => setStatus(s))
@@ -125,6 +135,36 @@ function startServer() {
     // Not ready: the loading screen is already visible and shows the error state.
   })
   void server.start()
+}
+
+/**
+ * Resolve a working dsh launch target, then start it. Fast paths are checked
+ * synchronously (explicit command / valid harnessRoot / filesystem search);
+ * when none exist we probe the npm package async — first npx run downloads it,
+ * which can take tens of seconds — and start on success.
+ */
+function startServer() {
+  if (server || detectPending) return
+  const found = detect.resolveHarness(cfg)
+  if (found) {
+    applyDetectPatch(found.patch)
+    pushLog(found.message)
+    return launchHarness()
+  }
+  detectPending = true
+  pushLog('[dsh-desktop] 未找到本地 dsh，正在探测 npm 包（npx --yes @deepseek-ai/dsh）…首次下载需稍候')
+  setStatus({ state: 'starting', message: '正在探测 dsh（首次需下载）…' })
+  detect.npxAvailable().then((ok) => {
+    detectPending = false
+    if (!ok) {
+      pushLog('[dsh-desktop] 未找到 dsh。请点击「部署 dsh」一键安装，或先安装 Node.js 后重试。')
+      setStatus({ state: 'error', message: '未找到 dsh，点击「部署 dsh」一键部署', url: null })
+      return
+    }
+    applyDetectPatch({ command: [...detect.NPX_COMMAND] })
+    pushLog('[dsh-desktop] 使用 npm 包启动：' + detect.NPX_COMMAND.join(' '))
+    launchHarness()
+  })
 }
 
 function stopServer() {
@@ -185,6 +225,43 @@ ipcMain.on('dsh:pet-toggle', () => {
   broadcastPetState()
 })
 ipcMain.handle('dsh:pet-state', () => ({ visible: getPetVisible() }))
+
+/* ══ dsh 部署（一键安装脚本）═══════════════════════════════════════════ */
+
+/** Path to install-dsh.mjs, extracted from the asar to userData when packaged. */
+function installerScriptPath() {
+  const bundled = path.join(__dirname, '..', 'scripts', 'install-dsh.mjs')
+  if (!bundled.includes('app.asar')) return bundled
+  const dest = path.join(app.getPath('userData'), 'install', 'install-dsh.mjs')
+  try {
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    if (!fs.existsSync(dest)) fs.copyFileSync(bundled, dest)
+  } catch (err) { /* ignore */ }
+  return dest
+}
+
+/** Open the one-click installer in a NEW visible terminal (npm output + UAC). */
+function launchInstaller() {
+  const script = installerScriptPath()
+  const cmd = `node "${script}" --config "${configFile()}"`
+  try {
+    if (process.platform === 'win32') {
+      const child = spawn('cmd.exe', ['/c', 'start', '部署 dsh', 'cmd.exe', '/k', cmd],
+        { detached: true, stdio: 'ignore', windowsHide: true })
+      child.on('error', () => { /* ignore */ })
+      child.unref()
+    } else {
+      const child = spawn('sh', ['-c', `x-terminal-emulator -e ${cmd} || gnome-terminal -- ${cmd} || konsole -e ${cmd}`],
+        { detached: true, stdio: 'ignore' })
+      child.on('error', () => { /* ignore */ })
+      child.unref()
+    }
+    pushLog('[dsh-desktop] 已打开部署窗口，请在弹出的终端中完成 dsh 安装。')
+  } catch (err) {
+    pushLog('[dsh-desktop] 无法打开部署窗口：' + err.message)
+  }
+}
+ipcMain.on('dsh:install-dsh', () => { launchInstaller() })
 
 /* ══ Theme settings window + IPC ═══════════════════════════════════════ */
 
@@ -305,6 +382,14 @@ ipcMain.handle('dsh:theme:pick-pet', async () => {
   const src = await pickFile(IMAGE_FILTERS)
   if (!src) return null
   const res = themeApi.replacePetImage(src)
+  reloadPetWindow()
+  return res
+})
+
+ipcMain.handle('dsh:theme:pick-pet-sound', async () => {
+  const src = await pickFile(SOUND_FILTERS)
+  if (!src) return null
+  const res = themeApi.replacePetClickSound(src)
   reloadPetWindow()
   return res
 })

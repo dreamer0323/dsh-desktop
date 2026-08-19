@@ -121,4 +121,4 @@ function writeConfig(patch) {
   fs.writeFileSync(file, JSON.stringify(next, null, 2) + '\n')
 }
 
-module.exports = { loadConfig, writeConfig, projectRoot, DEFAULTS }
+module.exports = { loadConfig, writeConfig, configFile, projectRoot, DEFAULTS }

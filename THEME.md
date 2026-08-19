@@ -36,7 +36,8 @@ assets/themes/marisa/
 渲染流程（`src/theme.js`）：读取 `theme.json` 的 `params` → 填充 `template.css` 的 `{{token}}` → 把素材槽位（背景图/道具图/音效）内联为 `data:` URI → 注入页面。**文件名与内容解耦**：你在本机选的任意图片/音频都会被复制进主题目录，无需约定文件名。
 
 - 参数系统在 `src/theme-params.js`：设置界面编辑**友好参数**（基础色/强调色/文字/语义色/遮罩），保存时展开为完整 `--dsw-alias-*` token 字典（rgba 变体、悬停态自动派生）。**默认值就是魔理沙原始取值**，不改任何参数时渲染结果与旧版完全一致。
-- 素材槽位：`background`（背景图）、`props.*`（star/hakkero/broom/hat/mushroom 道具图）、`sounds.*`（click/hover/complete/error/auth 音效）、`pet`（宠物形象，全局 `assets/pet/marisa-fumo.png`）。
+- 素材槽位：`background`（背景图）、`props.*`（star/hakkero/broom/hat/mushroom 道具图）、`sounds.*`（click/hover/complete/error/auth 音效）。
+- **全局素材**（不属于某个主题，全 dsh-desktop 生效）：`pet` 宠物形象（`assets/pet/marisa-fumo.png`）与 `pet-sound` **宠物点击音效**（`assets/pet/pet-click.*`）——点击桌宠会弹跳并播放该音效；未设置时用合成音。
 
 ## 三、如何使用设置界面（推荐）
 
@@ -44,7 +45,7 @@ assets/themes/marisa/
 2. **切换主题**：左侧主题列表点击即可编辑；点「设为当前」立即应用。
 3. **创建主题**：左下输入主题名（如 `mytheme`）→「创建主题」→ 以魔理沙为模板克隆并自动切换。之后可：
    - **调整参数**：右侧「外观参数」按分组改颜色/遮罩，点「保存并应用」即时生效（**不重载页面、不丢对话**）。
-   - **替换素材**：每个槽位显示缩略预览 + 「选择图片/音频」按钮 → 原生文件选择器选本机文件 → 自动复制进主题目录并应用。音效可试听；宠物形象替换后宠物窗口自动刷新。
+   - **替换素材**：每个槽位显示缩略预览 + 「选择图片/音频」按钮 → 原生文件选择器选本机文件 → 自动复制进主题目录并应用。音效可试听；宠物形象 / 宠物点击音效替换后宠物窗口自动刷新。
    - **高级**：折叠区可查看/编辑完整参数 JSON，支持自定义任意 token。
 4. **删除主题**：仅自定义主题可删（内置 marisa 与当前生效主题不可删）。
 
@@ -68,7 +69,9 @@ assets/themes/marisa/
 
 `theme.name` 是当前生效主题，切主题时由设置界面自动写回。`statsIntervalMs` 是宠物刷新内存/CPU 的间隔。
 
-> 打包版（exe）中可写数据（`config.json`、自定义主题、替换的素材、宠物形象）重定向到系统 userData 目录（asar 只读）；`npm start` 开发模式仍写仓库文件。切换逻辑见 `src/userdata.js`。
+> 打包版（exe）中可写数据（`config.json`、自定义主题、替换的素材、宠物形象与点击音效）重定向到系统 userData 目录（asar 只读）；`npm start` 开发模式仍写仓库文件。切换逻辑见 `src/userdata.js`。
+
+> 桌面壳不依赖固定路径：启动时自动检索 dsh（本地检出 / `npx @deepseek-ai/dsh`），找不到时加载界面出现「部署 dsh」按钮；一键部署脚本见 `install-dsh.cmd`（详见 [README.md](README.md) 的「dsh 部署」）。
 
 ## 五、运行与验证
 

@@ -89,19 +89,38 @@
 - `src\preload-settings.js` — 主题设置窗口桥（`dshTheme.*`）
 - `src\theme.js` — 通用主题管理器：清单/渲染/注入/素材替换/创建删除
 - `src\theme-params.js` — 主题参数系统：友好参数 ↔ 完整 token 字典展开
-- `ui\loading.html` / `loading.css` / `loading.js` — 启动/状态/日志界面（深色主题）
-- `ui\settings.html` / `settings.css` / `settings.js` — 主题设置图形化界面
+- `src\detect.js` — dsh 自动检索：检出搜索 + npm 包探测（`npx @deepseek-ai/dsh`）
+- `src\userdata.js` — 可写数据覆盖层（打包版写入 userData）
+- `ui\loading.html` / `loading.css` / `loading.js` — 启动/状态/日志界面（含「部署 dsh」按钮）
+- `ui\settings.html` / `settings.css` / `settings.js` — 主题设置图形化界面（含宠物点击音效替换）
 - `assets\themes\marisa\theme.json` + `template.css` — 主题清单（参数 + 素材槽位）与参数化模板
-- `test\server-smoke.mjs`、`test\theme-smoke.js`、`test\pet-inject.test.js` — 冒烟 / 主题 / 注入测试
+- `scripts\install-dsh.mjs` + `install-dsh.cmd` — dsh 一键部署脚本
+- `test\server-smoke.mjs`、`test\theme-smoke.js`、`test\detect.test.js`、`test\pet-inject.test.js` — 冒烟 / 主题 / 检索 / 注入测试
 - `README.md` — 使用与打包文档
 
 ## 它如何工作
 
-1. 启动时自动执行 `node --import tsx/esm apps/cli/src/bin.ts web`（封装了 `dsh web` 命令）
+1. 启动时先**自动定位 dsh**（见下方「dsh 部署」），再执行启动命令（默认封装 `dsh web`）
 2. 从 stdout 解析就绪行 `dsh web: http://127.0.0.1:PORT`
 3. 就绪后在原生窗口内直接加载该地址，**无需打开浏览器**
 4. 启动过程显示状态 + 实时日志；失败显示错误可一键重启；关闭窗口即停止服务进程树
 5. 带单实例锁、固定端口被占用时自动回退到系统分配端口
+
+## dsh 部署（自动检索 + 一键安装）
+
+桌面壳不再依赖固定的 `harnessRoot` 路径，启动时按顺序解析 dsh：
+
+1. 已配置的 `config.command`（如 `["dsh","web"]`）→ 直接使用
+2. `config.harnessRoot` 指向有效检出（含 `apps/cli/src/bin.ts`）→ 使用
+3. 在常见目录（`~/dev`、`D:/dev`、`C:/dev`、`DSH_HOME` 等，深度 ≤3，可 `DSH_SEARCH_ROOTS` 覆盖）搜索 `*harness*` / `*deepseek*` 检出
+4. 都没找到 → 探测 npm 包（`npm view @deepseek-ai/dsh`，registry 可达即可用）→ 用 `npx --yes @deepseek-ai/dsh web` 启动，**无需全局安装、无需管理员权限**
+
+解析结果自动写回 `config.json`（下次启动即秒开）。全部找不到时加载界面会提示并出现 **「部署 dsh」** 按钮。
+
+**一键部署**：仓库自带 `install-dsh.cmd`（Windows 双击）→ `scripts\install-dsh.mjs`：
+- `--npm`（默认）：`npm install -g @deepseek-ai/dsh` → 写 `config.command=["dsh","web"]`
+- `--source`：`git clone` + `npm install` 后写 `harnessRoot`
+- 打包版内点「部署 dsh」会自动在终端里运行它。
 
 ## 验证结果（均已实测通过）
 
@@ -132,6 +151,7 @@
 宠物 v4 能力（**轻量、无对话、无语音**）：
 
 - **静态 Marisa Fumo 形象**（单帧、无动画）、可拖拽、实时播报内存/CPU
+- **点击互动**：点一下宠物会轻轻弹跳并播放**自定义点击音效**（全局设置，设置窗口「素材替换 → 宠物点击音效」上传任意音频；未设置时用合成音）
 - **回合完成提醒**：主窗口对话完成时宠物弹「回答完毕」（只提示、不抓内容）
 - **token 用量**：头顶金色药丸实时显示本轮 `输入 / 输出` token
 - **授权提醒**：agent 请求批准时弹红色警示横幅 + 双音 + 系统通知

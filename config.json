@@ -11,14 +11,18 @@
   },
   "theme": {
     "enabled": true,
-    "name": "marisa"
+    "name": "rinmu"
   },
   "pet": {
     "enabled": true,
     "width": 300,
     "height": 400,
     "statsIntervalMs": 2000,
-    "tokens": { "enabled": true },
-    "notify": { "enabled": true }
+    "tokens": {
+      "enabled": true
+    },
+    "notify": {
+      "enabled": true
+    }
   }
 }

@@ -1,0 +1,185 @@
+/*
+ * Parameterized theme template (Marisa Kirisame 雾雨魔理沙 default).
+ *
+ * `{{scope}}` is replaced by the theme's data attribute (body[data-ds-<name>])
+ * and every `{ token }` placeholder by a value from theme.json's `params`. Asset
+ * placeholders ({{backgroundImage}}, {{starImage}}, …) are inlined as data:
+ * URIs by src/theme.js, so you can swap the placeholder SVGs for your own
+ * licensed PNG/WebP art from the settings UI without touching this file.
+ *
+ * To re-skin: edit params/assets through the settings window (ui/settings.html)
+ * — no manual editing needed here.
+ */
+
+/* =========================================================================
+ * Palette — semantic tokens (what every component actually reads).
+ * Panels use translucent rgba so the background image shows through.
+ * ========================================================================= */
+body[{{scope}}],
+body[{{scope}}][data-ds-dark-theme] {
+  color-scheme: dark;
+
+  /* chrome vars consumed by the injected side tabs (pet / theme) */
+  --ds-theme-accent: {{accent}};
+  --ds-theme-accent-soft: {{gradientStart}};
+  --ds-theme-accent-ink: {{labelOnAccent}};
+
+  /* --- surfaces (translucent → background image shows through) --------- */
+  --dsw-alias-bg-base: {{dswBgBase}};
+  --dsw-alias-bg-layer-1: {{dswBgLayer1}};
+  --dsw-alias-bg-layer-2: {{dswBgLayer2}};
+  --dsw-alias-bg-layer-3: {{dswBgLayer3}};
+  --dsw-alias-bg-module-platform: {{dswBgModule}};
+  --dsw-alias-bg-multi-select: {{dswBgMulti}};
+  --dsw-alias-bg-overlay: {{dswBgOverlay}};
+  --dsw-alias-bg-skeleton: {{dswBgSkeleton}};
+
+  /* --- borders (faint accent) ------------------------------------------ */
+  --dsw-alias-border-l1: {{dswBorderL1}};
+  --dsw-alias-border-l2: {{dswBorderL2}};
+  --dsw-alias-border-l3: {{dswBorderL3}};
+  --dsw-alias-border-l4: {{dswBorderL4}};
+  --dsw-alias-border-inverted: {{dswBorderInverted}};
+  --dsw-alias-border-inverted2: {{dswBorderInverted2}};
+  --dsw-alias-border-l2-darkmode-thin: {{dswBorderL2Thin}};
+
+  /* --- brand / accent --------------------------------------------------- */
+  --dsw-alias-brand-primary: {{accent}};
+  --dsw-alias-brand-text: {{accentText}};
+  --dsw-alias-brand-primary-invert: {{accentInvert}};
+  --dsw-alias-brand-primary-new-colorprimary-new-color: {{accentSoft}};
+
+  /* --- buttons ---------------------------------------------------------- */
+  --dsw-alias-button-primary-fill: {{primaryGradient}};
+  --dsw-alias-button-primary-hover: {{hoverGradient}};
+  --dsw-alias-button-primary-dimmed: {{dswButtonPrimaryDimmed}};
+  --dsw-alias-button-info-fill: {{info}};
+  --dsw-alias-button-info-hover: {{infoHover}};
+  --dsw-alias-button-contrast-fill: {{textPrimary}};
+  --dsw-alias-button-elevated-fill: {{dswButtonElevated}};
+  --dsw-alias-button-floating-fill: {{dswButtonFloating}};
+  --dsw-alias-button-floating-hover: {{dswButtonFloatingHover}};
+  --dsw-alias-button-ghost-active-fill: {{dswButtonGhostFill}};
+  --dsw-alias-button-ghost-active-hover: {{dswButtonGhostHover}};
+  --dsw-alias-button-ghost-active-border: {{dswButtonGhostBorder}};
+  --dsw-alias-button-tool-bar-fill: {{dswButtonToolbar}};
+  --dsw-alias-button-tool-bar-hover: {{dswButtonToolbarHover}};
+  --dsw-alias-button-tool-bar-fill-invisible: {{dswButtonToolbarInvisible}};
+
+  /* --- interactive states ---------------------------------------------- */
+  --dsw-alias-interactive-bg-hover: {{dswInteractiveHover}};
+  --dsw-alias-interactive-bg-active: {{dswInteractiveActive}};
+  --dsw-alias-interactive-bg-hover-accent: {{dswInteractiveHoverAccent}};
+  --dsw-alias-interactive-bg-hover-solid: {{dswInteractiveHoverSolid}};
+  --dsw-alias-interactive-bg-hover-danger: {{dswInteractiveHoverDanger}};
+
+  /* --- text ------------------------------------------------------------- */
+  --dsw-alias-label-primary: {{textPrimary}};
+  --dsw-alias-label-secondary: {{textSecondary}};
+  --dsw-alias-label-tertiary: {{textTertiary}};
+  --dsw-alias-label-caption: {{textCaption}};
+  --dsw-alias-label-dimmed: {{textDimmed}};
+  --dsw-alias-label-primary-foreground: {{labelOnAccent}};
+  --dsw-alias-label-primary-inverted: {{accentInvert}};
+  --dsw-alias-label-primary-dimmed: {{dswLabelPrimaryDimmed}};
+  --dsw-alias-label-primary-bluish: {{textPrimary}};
+
+  /* --- markdown / code surfaces ---------------------------------------- */
+  --dsw-alias-markdown-code-block: {{dswMarkdownCode}};
+  --dsw-alias-markdown-code-block-banner: {{dswMarkdownCodeBanner}};
+  --dsw-alias-markdown-inline-code: {{dswMarkdownInline}};
+  --dsw-alias-markdown-code-segment-selected: {{dswMarkdownSel}};
+  --dsw-alias-markdown-code-segment-unselected: {{dswMarkdownUnsel}};
+  --dsw-alias-markdown-citation: {{dswMarkdownCitation}};
+  --dsw-alias-markdown-tag: {{dswMarkdownTag}};
+  --dsw-alias-markdown-placeholder: {{dswMarkdownPlaceholder}};
+
+  /* --- scrollbar -------------------------------------------------------- */
+  --dsw-alias-scrollbar-bg-l1: {{dswScrollbarBg}};
+  --dsw-alias-scrollbar-bg-l2: {{dswScrollbarBg}};
+  --dsw-alias-scrollbar-hover-l1: {{dswScrollbarHover}};
+  --dsw-alias-scrollbar-hover-l2: {{dswScrollbarHover}};
+
+  /* --- semantic states -------------------------------------------------- */
+  --dsw-alias-state-business-primary: {{info}};
+  --dsw-alias-state-business-tertiary: {{dswStateBusinessTertiary}};
+  --dsw-alias-state-error-primary: {{error}};
+  --dsw-alias-state-error-secondary: {{error2}};
+  --dsw-alias-state-success-primary: {{success}};
+  --dsw-alias-state-success-secondary: {{success2}};
+  --dsw-alias-state-success-tertiary: {{dswStateSuccessTertiary}};
+  --dsw-alias-state-warn-primary: {{warn}};
+  --dsw-alias-state-warn-secondary: {{warn2}};
+  --dsw-alias-state-warn-tertiary: {{dswStateWarnTertiary}};
+  --dsw-alias-state-warn-label: {{warnLabel}};
+
+  /* --- overlays --------------------------------------------------------- */
+  --dsw-alias-toast-bg: {{dswToastBg}};
+  --dsw-alias-tooltip-bg: {{dswTooltipBg}};
+
+  /* --- feature-specific surfaces --------------------------------------- */
+  --dsw-specific-sidebar-fill: {{dswSidebarFill}};
+  --dsw-specific-sidebar-nav-item-active: {{dswSidebarNavActive}};
+  --dsw-specific-sidebar-nav-item-active-accent: {{accent}};
+  --dsw-specific-sidebar-nav-item-hover: {{dswInteractiveHoverSolid}};
+  --dsw-specific-input-major: {{dswInputMajor}};
+  --dsw-specific-login-input: {{dswLoginInput}};
+  --dsw-specific-menu: {{dswSpecificMenu}};
+  --dsw-specific-selector: {{dswSpecificSelector}};
+  --dsw-specific-bubble: {{dswSpecificBubble}};
+  --dsw-specific-bubble-highlight: {{dswSpecificBubbleHighlight}};
+  --dsw-specific-tip: {{dswSpecificTip}};
+}
+
+/* =========================================================================
+ * Background image — your themed fan art goes here.
+ * The gradient veils the image so foreground text stays readable; tune the
+ * alpha in the settings UI (背景图 → 遮罩不透明度).
+ * ========================================================================= */
+body[{{scope}}] {
+  background-color: {{bgBase}};
+  background-image:
+    linear-gradient({{overlayGradient}}, {{overlayGradient}}),
+    {{backgroundImage}};
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+}
+
+/* =========================================================================
+ * BUTTON PROPS — character item art for small controls.
+ * Primary actions read as the mini-hakkero (gold furnace). Icon-only buttons
+ * get a faint magic-star accent. These use :has() (Chromium 105+, always
+ * present in this Electron) because CSS Modules hash the class names; adjust
+ * the selectors here if a harness rebuild renames the DOM shape.
+ * ========================================================================= */
+body[{{scope}}] button[type="button"] {
+  transition: filter var(--ds-transition-duration, 0.2s) var(--ds-ease-in-out, ease),
+    transform var(--ds-transition-duration, 0.2s) var(--ds-ease-in-out, ease);
+}
+
+body[{{scope}}] button[type="button"]:hover:not(:disabled) {
+  filter: drop-shadow(0 0 6px {{dswButtonGhostBorder}});
+}
+
+/* Icon-only buttons (a button whose direct child is the icon span) get a
+ * faint star behind the glyph. Enable/tune via the settings UI. */
+body[{{scope}}] button[type="button"]:has(> span > svg) {
+  background-image: {{starImage}};
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px;
+  background-blend-mode: soft-light;
+  opacity: 0.85;
+}
+
+/* Example: give the primary/CTA button a mini-hakkero (octagonal furnace)
+ * watermark on the right edge. Enable and adjust `background-position/size`
+ * to taste. (Disabled by default — the gold gradient already carries it.) */
+/* body[{{scope}}] button[type="button"]:has(svg):has(span) {
+  background-image: {{hakkeroImage}};
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+} */

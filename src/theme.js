@@ -47,6 +47,34 @@ function petImageFile() {
   return PET_IMAGE
 }
 
+/*
+ * Pet click sound — a GLOBAL desktop-shell asset (like the pet image), not
+ * tied to the active theme. The user replaces it from the settings window; the
+ * pet window plays it when clicked. Stored as assets/pet/pet-click.<ext> in
+ * dev, userData/pet/pet-click.<ext> in packaged builds.
+ */
+
+function petClickSoundFile() {
+  const dir = isOverlay() ? path.join(userDataDir(), 'pet') : path.join(__dirname, '..', 'assets', 'pet')
+  try {
+    const name = fs.readdirSync(dir).find((n) => /^pet-click\./i.test(n))
+    return name ? path.join(dir, name) : null
+  } catch (err) {
+    return null
+  }
+}
+
+/** Replace the (global) pet click sound and return its display info. */
+function replacePetClickSound(srcPath) {
+  const ext = path.extname(srcPath).toLowerCase() || '.mp3'
+  const dest = isOverlay()
+    ? path.join(userDataDir(), 'pet', 'pet-click' + ext)
+    : path.join(__dirname, '..', 'assets', 'pet', 'pet-click' + ext)
+  fs.mkdirSync(path.dirname(dest), { recursive: true })
+  fs.copyFileSync(srcPath, dest)
+  return { rel: 'assets/pet/' + path.basename(dest), dataUri: toDataUri(dest) }
+}
+
 const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
@@ -409,6 +437,13 @@ function describeAssets(name, manifest) {
       used: true, dataUri: toDataUri(pet),
     })
   }
+  // Global pet click sound (whole-app feature, not theme-scoped).
+  const snd = petClickSoundFile()
+  list.push({
+    slot: 'pet-sound', label: '宠物点击音效', kind: 'sound',
+    rel: snd ? 'assets/pet/' + path.basename(snd) : '',
+    used: true, dataUri: snd ? toDataUri(snd) : null,
+  })
   return list
 }
 
@@ -417,6 +452,8 @@ module.exports = {
   THEME_DIR: THEMES_DIR, // legacy alias
   PET_IMAGE,
   petImageFile,
+  petClickSoundFile,
+  replacePetClickSound,
   RESERVED_THEMES,
   toDataUri,
   themeDir,

@@ -35,7 +35,7 @@ Promise.resolve(p).then(() => {
   assert.ok(calls.js.some((c) => c.includes('__DSH_THEME_SOUNDS__')), 'sound map injected')
   assert.ok(calls.css, 'injected CSS present')
   assert.ok(calls.css.includes('body[data-ds-marisa]'), 'theme scoped under data-ds-marisa')
-  assert.ok(calls.css.includes('data:image/jpeg;base64,'), 'background url inlined as data URI (jpeg)')
+  assert.ok(calls.css.includes('data:image/webp;base64,'), 'background url inlined as data URI (webp)')
   assert.ok(!/\{\{[A-Za-z0-9_-]+\}\}/.test(calls.css), 'no leftover {{placeholders}} in rendered css')
   assert.ok(!/url\(\s*["']?images\//.test(calls.css), 'no unresolved relative image urls remain')
 

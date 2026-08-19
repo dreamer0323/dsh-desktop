@@ -21,4 +21,8 @@ contextBridge.exposeInMainWorld('pet', {
   // Effective pet image (data: URI) — the replacement lives in userData and
   // the bundled <img src> would show the default, so main pushes the winner.
   onImage: (cb) => subscribe('pet:image', cb),
+  // Global pet click sound (data: URI or null for the synth fallback).
+  onSound: (cb) => subscribe('pet:sound', cb),
+  // JS window drag (renderer reports incremental deltas).
+  drag: (dx, dy) => ipcRenderer.send('pet:drag', { dx, dy }),
 })

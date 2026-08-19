@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('dsh', {
   onLog: (cb) => subscribe('dsh:log', cb),
   restart: () => ipcRenderer.send('dsh:restart'),
   quit: () => ipcRenderer.send('dsh:quit'),
+  // Open the one-click dsh installer (visible terminal).
+  installDsh: () => ipcRenderer.send('dsh:install-dsh'),
   // Turn-lifecycle events (the theme runtime reports generation start/done).
   notifyTurn: (event) => ipcRenderer.send('dsh:turn', event),
   // General pet events (tokens / authorization / chat reply) forwarded to the pet.

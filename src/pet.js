@@ -7,7 +7,7 @@
  * `notifyTurn` from the main window (phase 4) via the `pet:turn` channel.
  */
 
-const { BrowserWindow, screen } = require('electron')
+const { BrowserWindow, screen, ipcMain } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 const { StatsMonitor } = require('./stats')
@@ -29,6 +29,26 @@ function petImageUri() {
     return null
   }
 }
+
+/** Global pet click sound as a data: URI (null → renderer uses a synth blip). */
+function petSoundUri() {
+  try {
+    const f = themeApi.petClickSoundFile()
+    return f && fs.existsSync(f) ? themeApi.toDataUri(f) : null
+  } catch (err) {
+    return null
+  }
+}
+
+/* Pet window drag (renderer → main). JS drag replaces -webkit-app-region so
+ * the window can still be moved while clicks on the pet stay clickable. */
+ipcMain.on('pet:drag', (_event, { dx, dy }) => {
+  if (!petWin || petWin.isDestroyed()) return
+  try {
+    const [x, y] = petWin.getPosition()
+    petWin.setPosition(x + (Number(dx) || 0), y + (Number(dy) || 0))
+  } catch (err) { /* ignore */ }
+})
 
 function createPetWindow(cfg) {
   const petCfg = (cfg && cfg.pet) || {}
@@ -81,6 +101,7 @@ function createPetWindow(cfg) {
     if (petWin && !petWin.isDestroyed()) {
       try {
         petWin.webContents.send('pet:image', petImageUri())
+        petWin.webContents.send('pet:sound', petSoundUri())
         petWin.webContents.send('pet:config', {
           tokens: !!(petCfg.tokens && petCfg.tokens.enabled),
           notify: !!(petCfg.notify && petCfg.notify.enabled),

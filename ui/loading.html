@@ -21,6 +21,8 @@
       <span id="statusUrl" class="status-url"></span>
     </div>
 
+    <p id="statusMsg" class="status-msg" hidden></p>
+
     <div id="errorBox" class="error-box" hidden>
       <strong>启动失败</strong>
       <p id="errorText"></p>
@@ -32,6 +34,7 @@
     </details>
 
     <footer>
+      <button id="installBtn" class="btn" hidden>部署 dsh</button>
       <button id="restartBtn" class="btn">重启服务</button>
       <button id="quitBtn" class="btn danger">退出</button>
     </footer>

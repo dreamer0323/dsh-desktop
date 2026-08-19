@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('dshTheme', {
   // re-render. Returns the updated slot info (or null when cancelled).
   pickAsset: (name, slot, kind) => ipcRenderer.invoke('dsh:theme:pick-asset', { name, slot, kind }),
   pickPet: () => ipcRenderer.invoke('dsh:theme:pick-pet'),
+  pickPetSound: () => ipcRenderer.invoke('dsh:theme:pick-pet-sound'),
 
   // Keep the settings window in sync with main-window state.
   onState: (cb) => {

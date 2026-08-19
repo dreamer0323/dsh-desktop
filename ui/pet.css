@@ -54,7 +54,6 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  -webkit-app-region: drag;
   cursor: grab;
   z-index: 10;
 }
@@ -65,8 +64,15 @@ html, body {
   height: 200px;
   object-fit: contain;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
-  -webkit-app-region: drag;
   pointer-events: none;
+}
+
+/* 点击反馈：轻轻弹一下再落下 */
+.mascot.clicked .fumo { animation: pet-bounce 0.35s ease; }
+@keyframes pet-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40%      { transform: translateY(-10px) scale(1.05); }
+  70%      { transform: translateY(0) scale(0.98); }
 }
 
 /* 数据药丸 */

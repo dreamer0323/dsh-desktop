@@ -22,6 +22,89 @@
     })
   }
 
+  /* ── Pet click: play the user's sound (or a synth blip), with a bounce ──
+   * The click sound is a global dsh-desktop asset pushed by main as a data:
+   * URI (null = none set). A tiny WebAudio tone keeps clicks from being
+   * silent when no file has been picked. */
+  var petSound = null
+  if (window.pet && window.pet.onSound) {
+    window.pet.onSound(function (uri) {
+      petSound = uri || null
+      window.__petSoundSet = true // test hook
+    })
+  }
+
+  var clickCtx = null
+  function synthBlip() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext
+      if (!AC) return
+      if (!clickCtx) clickCtx = new AC()
+      if (clickCtx.state === 'suspended') clickCtx.resume()
+      var t = clickCtx.currentTime
+      var o = clickCtx.createOscillator()
+      var g = clickCtx.createGain()
+      o.type = 'triangle'
+      o.frequency.setValueAtTime(880, t)
+      g.gain.setValueAtTime(0.0001, t)
+      g.gain.exponentialRampToValueAtTime(0.15, t + 0.012)
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14)
+      o.connect(g)
+      g.connect(clickCtx.destination)
+      o.start(t)
+      o.stop(t + 0.16)
+    } catch (err) { /* ignore */ }
+  }
+
+  function onPetClick() {
+    window.__petClickCount = (window.__petClickCount || 0) + 1 // test hook
+    var mascot = document.getElementById('mascot')
+    if (mascot) {
+      mascot.classList.remove('clicked')
+      void mascot.offsetWidth // restart the animation
+      mascot.classList.add('clicked')
+    }
+    if (petSound) {
+      try { var a = new Audio(petSound); a.volume = 0.9; void a.play() } catch (err) { synthBlip() }
+    } else {
+      synthBlip()
+    }
+  }
+
+  /* Drag-vs-click discrimination. Dragging the pet moves the window via
+   * window.pet.drag (IPC); a press without movement on the fumo image is a
+   * click. The click zone hugs the image (not the whole transparent window). */
+  function isOnPetImage(x, y) {
+    var img = document.getElementById('fumo')
+    if (!img) return false
+    var r = img.getBoundingClientRect()
+    var pad = 8 // small tolerance so the edge isn't finicky
+    return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad
+  }
+
+  var dragState = null
+  document.addEventListener('mousedown', function (e) {
+    dragState = { x: e.screenX, y: e.screenY, moved: false, onPet: isOnPetImage(e.clientX, e.clientY) }
+  })
+  document.addEventListener('mousemove', function (e) {
+    if (!dragState) return
+    var dx = e.screenX - dragState.x
+    var dy = e.screenY - dragState.y
+    if (Math.abs(dx) + Math.abs(dy) > 4) dragState.moved = true
+    if (dragState.moved && window.pet && window.pet.drag) {
+      window.pet.drag(dx, dy)
+      dragState.x = e.screenX
+      dragState.y = e.screenY
+    }
+  })
+  document.addEventListener('mouseup', function () {
+    if (!dragState) return
+    var wasDrag = dragState.moved
+    var wasOnPet = dragState.onPet
+    dragState = null
+    if (!wasDrag && wasOnPet) onPetClick()
+  })
+
   var authBanner = null
   var lastTokens = null
 

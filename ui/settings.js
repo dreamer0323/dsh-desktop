@@ -267,9 +267,10 @@
   async function pickAsset(slotInfo, btn) {
     btn.disabled = true
     try {
-      var res = slotInfo.slot === 'pet'
-        ? await window.dshTheme.pickPet()
-        : await window.dshTheme.pickAsset(state.current, slotInfo.slot, slotInfo.kind)
+      var res
+      if (slotInfo.slot === 'pet') res = await window.dshTheme.pickPet()
+      else if (slotInfo.slot === 'pet-sound') res = await window.dshTheme.pickPetSound()
+      else res = await window.dshTheme.pickAsset(state.current, slotInfo.slot, slotInfo.kind)
       if (res) {
         var card = document.querySelector('.asset-card[data-slot="' + slotInfo.slot + '"]')
         if (card) {
@@ -277,7 +278,9 @@
           var fresh = (await window.dshTheme.read(state.current)).assets.find(function (a) { return a.slot === slotInfo.slot })
           if (fresh) card.replaceWith(buildAssetCard(fresh))
         }
-        toast(slotInfo.slot === 'pet' ? '宠物形象已替换' : '素材已替换' + (state.active ? '并应用' : ''))
+        var label = { pet: '宠物形象已替换', 'pet-sound': '宠物点击音效已替换' }[slotInfo.slot] ||
+          '素材已替换' + (state.active ? '并应用' : '')
+        toast(label)
       }
     } catch (err) {
       toast('替换失败：' + (err.message || err), true)

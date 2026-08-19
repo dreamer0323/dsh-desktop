@@ -85,6 +85,54 @@ app.whenReady().then(async () => {
   }, 3000)
   if (!notice) return fail('completion notice not shown')
 
-  console.log('pet-render: OK (fumo static / tokens pill / auth banner / completion notice)')
+  /* Pet click: the pushed sound plays on click; a drag is NOT a click; and
+   * pressing the transparent margin (off the image) is neither. */
+  await win.webContents.executeJavaScript(`(function () {
+    window.__audioPlayed = false
+    window.Audio = function () { return { play: function () { window.__audioPlayed = true }, volume: 0 } }
+  })()`)
+  win.webContents.send('pet:sound', 'data:audio/mp3;base64,AAAA')
+  const soundLanded = await waitFor(async () => {
+    return win.webContents.executeJavaScript('window.__petSoundSet === true')
+  }, 2000)
+  if (!soundLanded) return fail('pet:sound did not reach the pet renderer')
+
+  // The click zone hugs the fumo image — click its center.
+  const center = await win.webContents.executeJavaScript(`(function () {
+    var r = document.getElementById('fumo').getBoundingClientRect()
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }
+  })()`)
+
+  await win.webContents.executeJavaScript(`(function () {
+    document.dispatchEvent(new MouseEvent('mousedown', { clientX: ${center.x}, clientY: ${center.y}, screenX: ${center.x}, screenY: ${center.y} }))
+    document.dispatchEvent(new MouseEvent('mouseup',   { clientX: ${center.x}, clientY: ${center.y}, screenX: ${center.x}, screenY: ${center.y} }))
+  })()`)
+  const clickCount = await win.webContents.executeJavaScript('window.__petClickCount || 0')
+  const played = await win.webContents.executeJavaScript('window.__audioPlayed')
+  if (clickCount !== 1) return fail('pet click did not register (count=' + clickCount + ')')
+  if (!played) return fail('pet click did not play the custom sound')
+
+  // A drag that starts on the image is a drag, not a click.
+  await win.webContents.executeJavaScript(`(function () {
+    document.dispatchEvent(new MouseEvent('mousedown',  { clientX: ${center.x}, clientY: ${center.y}, screenX: ${center.x}, screenY: ${center.y} }))
+    document.dispatchEvent(new MouseEvent('mousemove',  { clientX: ${center.x + 30}, clientY: ${center.y + 30}, screenX: ${center.x + 30}, screenY: ${center.y + 30} }))
+    document.dispatchEvent(new MouseEvent('mouseup',    { clientX: ${center.x + 30}, clientY: ${center.y + 30}, screenX: ${center.x + 30}, screenY: ${center.y + 30} }))
+  })()`)
+  const afterDrag = await win.webContents.executeJavaScript('window.__petClickCount || 0')
+  if (afterDrag !== 1) return fail('drag was misclassified as a click (count=' + afterDrag + ')')
+
+  // A press on the transparent margin (off the image) must NOT trigger a click.
+  const offPt = await win.webContents.executeJavaScript(`(function () {
+    var r = document.getElementById('fumo').getBoundingClientRect()
+    return { x: Math.max(4, Math.round(r.left) - 20), y: Math.max(4, Math.round(r.top) - 20) }
+  })()`)
+  await win.webContents.executeJavaScript(`(function () {
+    document.dispatchEvent(new MouseEvent('mousedown', { clientX: ${offPt.x}, clientY: ${offPt.y}, screenX: ${offPt.x}, screenY: ${offPt.y} }))
+    document.dispatchEvent(new MouseEvent('mouseup',   { clientX: ${offPt.x}, clientY: ${offPt.y}, screenX: ${offPt.x}, screenY: ${offPt.y} }))
+  })()`)
+  const afterOff = await win.webContents.executeJavaScript('window.__petClickCount || 0')
+  if (afterOff !== 1) return fail('off-image press triggered a click (count=' + afterOff + ')')
+
+  console.log('pet-render: OK (fumo static / tokens pill / auth banner / completion notice / click plays sound / drag≠click)')
   app.exit(0)
 }).catch((err) => fail(err && err.message || String(err)))

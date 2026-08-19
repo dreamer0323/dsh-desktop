@@ -5,9 +5,11 @@ function byId(id) { return document.getElementById(id) }
 var statusDot = byId('statusDot')
 var statusText = byId('statusText')
 var statusUrl = byId('statusUrl')
+var statusMsg = byId('statusMsg')
 var logEl = byId('log')
 var errorBox = byId('errorBox')
 var errorText = byId('errorText')
+var installBtn = byId('installBtn')
 var restartBtn = byId('restartBtn')
 var quitBtn = byId('quitBtn')
 
@@ -40,8 +42,13 @@ function setStatus(status) {
     var msg = status.message
     if (!msg && status.code != null) msg = '退出码 ' + status.code
     errorText.textContent = msg || '服务进程异常退出，请查看下方日志。'
+    // Offer the one-click dsh installer when the failure is about a missing dsh.
+    installBtn.hidden = !/dsh|部署/.test(msg || '')
   } else {
     errorBox.hidden = true
+    // Show a non-fatal status message (e.g. "正在探测 dsh…").
+    statusMsg.hidden = !status.message
+    statusMsg.textContent = status.message || ''
   }
 }
 
@@ -53,6 +60,7 @@ function init() {
     for (var i = 0; i < logs.length; i++) appendLog(logs[i])
     setStatus(state && state.status)
   })
+  installBtn.addEventListener('click', function () { window.dsh.installDsh() })
   restartBtn.addEventListener('click', function () { window.dsh.restart() })
   quitBtn.addEventListener('click', function () { window.dsh.quit() })
 }

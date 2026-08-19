@@ -3,6 +3,9 @@
 const { spawn, spawnSync } = require('node:child_process')
 const { EventEmitter } = require('node:events')
 const net = require('node:net')
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
 
 const NL = String.fromCharCode(10) // line feed
 const CR = String.fromCharCode(13) // carriage return
@@ -11,6 +14,17 @@ function trimLineEnds(value) {
   let text = String(value)
   while (text.endsWith(NL) || text.endsWith(CR)) text = text.slice(0, -1)
   return text
+}
+
+/**
+ * Working directory for the harness child. In checkout mode it's the checkout
+ * root; in command mode (e.g. `npx @deepseek-ai/dsh web`) the checkout may not
+ * exist on this machine, so fall back to DSH_HOME / the user's home.
+ */
+function validCwd(config) {
+  const root = config && config.harnessRoot
+  if (root && fs.existsSync(path.join(root, 'package.json'))) return root
+  return process.env.DSH_HOME || os.homedir()
 }
 
 /** Pull the canonical URL out of the harness readiness line: "dsh web: http://127.0.0.1:PORT". */
@@ -79,7 +93,7 @@ class DshServer extends EventEmitter {
     return {
       command,
       args,
-      cwd: cfg.harnessRoot,
+      cwd: validCwd(cfg),
       env: { ...process.env, ...(cfg.env || {}) },
     }
   }
