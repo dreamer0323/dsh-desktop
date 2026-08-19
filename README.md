@@ -1,166 +1,133 @@
 # DeepSeek Harness Desktop
 
-一个 Electron 桌面外壳，封装 DeepSeek Harness 的 "dsh web" 命令：程序自动启动/停止 Web 服务，并在原生窗口内直接显示 Web 界面，无需手动打开浏览器。
+一个开箱即用的 DeepSeek Harness 桌面客户端。自动拉起 `dsh web` 并在原生窗口内显示网页界面，**无需打开浏览器**。内置透明桌宠、多主题、token 用量与授权提醒。
 
-## 它做什么
+## ✨ 功能亮点
 
-- 启动时自动拉起 "dsh web"（默认执行 node --import tsx/esm apps/cli/src/bin.ts web）
-- 从标准输出解析就绪地址（形如 "dsh web: http://127.0.0.1:PORT"）
-- 就绪后在应用窗口内加载该地址
-- 启动过程显示状态与实时日志；失败时显示错误并可一键重启
-- 关闭窗口时停止服务进程树
-- 单实例锁：重复启动只会聚焦已有窗口
+- **一键启动 dsh**：自动发现或引导安装 dsh，启动 / 停止 / 日志全自动，失败可一键重启
+- **透明桌宠**：可拖拽、点击弹跳 + 音效；鼠标判定区贴合形象，透明区点击穿透到下层应用
+- **多主题**：内置 **cirno**（默认）/ rinmu / marisa，图形化设置界面可创建、改色、换素材
+- **实时信息**：桌宠显示内存/CPU，头顶药丸实时显示本轮输入/输出 token
+- **提醒**：agent 请求批准时弹红色警示横幅，回答完成时桌宠提示「回答完毕」
+- **免浏览器**：原生窗口内直接浏览 dsh 网页界面
 
-## 前置条件
+---
 
-- Node.js 22+（与 Harness 要求一致）
-- 一个可运行的 DeepSeek Harness 仓库（已 pnpm install 且已 pnpm run build，前端 dist 已构建）
-- Windows / macOS / Linux 均可（本项目当前在 Windows 上开发与验证）
+## 🚀 快速开始（普通用户）
 
-## 安装
+### 1. 下载
 
-在项目目录执行：
+从仓库的 **Releases** 页面下载：
 
-    npm install
+| 文件 | 说明 |
+|---|---|
+| `DeepSeek Harness Desktop Setup x.x.x.exe` | 安装版（推荐，可自选安装目录） |
+| `DeepSeek Harness Desktop x.x.x.exe` | 便携版（双击即用，免安装） |
 
-## 运行
+### 2. 首次使用（安装 dsh）
 
-    npm start
+本程序是桌面外壳，运行前需要 **dsh 本体**（DeepSeek Harness）：
 
-首次启动会读取 config.json，按其 harnessRoot 指向的仓库拉起服务。
+1. 安装 [Node.js 22+](https://nodejs.org/zh-cn)（一路默认即可）
+2. 启动程序，若检测不到 dsh，加载页会显示 **「部署 dsh」** 按钮，点击即自动安装官方 dsh
 
-## 配置（config.json）
+> 也可以提前在命令行手动安装：`npm install -g @deepseek-ai/dsh`
 
-- harnessRoot：Harness 仓库路径（默认 D:/dev/agent/dsh/deepseek-harness，也可用环境变量 DSH_HARNESS_ROOT 覆盖）
-- command：可选，完全自定义启动命令（数组形式，例如 ["npx", "@deepseek-ai/dsh", "web"]）；留 null 则自动构建
-- nodeBin：启动 Harness 用的 node 可执行文件名（默认 node，从 PATH 解析）
-- port：监听端口，数字（如 3080）或 "auto"（传 --port 0 并从日志解析真实端口）；固定端口被占用时自动回退到自动端口
-- extraArgs：追加给 "dsh web" 的额外参数数组
-- env：追加给 Harness 进程的环境变量
-- window：窗口宽高
+### 3. 开始使用
 
-## 打包成可执行程序
+启动后窗口加载 dsh 网页界面，桌宠常驻屏幕右下角。右键/侧边栏可切换主题、开关桌宠，详见 [THEME.md](THEME.md)。
 
-    npm run dist
+### 常见问题（普通用户）
 
-产物输出到 release/（Windows 下生成 NSIS 安装包与 portable 单文件版）。
+- **窗口一片空白** → 确认 Node.js 已安装、dsh 已部署（点「部署 dsh」）
+- **提示未找到 dsh** → 点加载页的「部署 dsh」按钮一键安装
+- **端口被占用** → 程序会自动回退到随机端口，无需处理
 
-注意：桌面程序只是外壳，并不会把 Harness 本体打包进去。打包后的程序仍依赖：
+---
 
-1. 系统 PATH 里有 node；
-2. 配置指向一个可运行的 Harness 仓库（或通过 command 使用 npx）。
+## 🖥️ 开发者指南
 
-## 工作原理
+### 环境要求
 
-1. 主进程 src/main.js 创建窗口并启动 DshServer（src/server.js）。
-2. DshServer 以 harnessRoot 为工作目录，子进程运行 "dsh web"，逐行读取输出并解析就绪 URL。
-3. 就绪后窗口从本地加载页（ui/loading.html）跳转到该 URL。
-4. 关闭窗口 / 退出时终止服务进程树。
+- Node.js 22+
+- （可选）一个本地 DeepSeek Harness 检出（需 `pnpm install` 并 `pnpm run build`，前端 dist 已构建）
+- Windows / macOS / Linux（当前主要在 Windows 上开发验证）
 
-## 注意事项
+### 安装与运行
 
-- 关闭窗口会立即结束 Harness 进程（Windows 上 Node 无法向子进程投递 SIGTERM/SIGINT 的处理器，因此用 taskkill /T /F 结束整棵进程树）。建议在对话回合完成后再关闭。
-- 单实例锁防止多开；如需同时运行多实例，请为每个实例配置不同的端口和 DSH_HOME。
-- 首次启动较慢：Harness 通过 tsx 即时转译加载大量插件，属正常现象。
+```bash
+npm install
+npm start
+```
 
-## 常见问题
+首次启动会自动定位 dsh，按顺序：`config.command` → `config.harnessRoot` 检出 → 常见目录搜索（`~/dev`、`D:/dev` 等，可用 `DSH_SEARCH_ROOTS` 覆盖）→ `npx @deepseek-ai/dsh`（npm 包，无需全局安装）。
 
-- npm install 后 Electron 二进制下载失败（fetch failed）：GitHub 源不稳定时，用国内镜像重下：
+### 打包
 
-    $env:ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
-    node node_modules/electron/install.js
+```bash
+npm run dist
+```
 
-- 打包时二进制下载失败：设置 ELECTRON_BUILDER_BINARIES_MIRROR = https://npmmirror.com/mirrors/electron-builder-binaries/ 后重试 npm run dist。
+产物输出到 `release/`（Windows 下生成 NSIS 安装包与便携单文件版）。
 
-- 窗口加载后一片空白：确认 Harness 前端已构建（pnpm run build），且 config.json 的 harnessRoot 指向正确仓库。
+> 注意：桌面程序只是外壳，**不打包 Harness 本体**。打包后的程序运行时仍需要 Node.js 与 dsh（程序会引导安装，见「快速开始」）。
 
-# 项目结构
+### 测试
 
-## 交付结果
+```bash
+npm test             # 单元 / 渲染 / 集成测试
+npm run test:server  # dsh 无头冒烟测试
+```
 
-**可执行程序**：`release\DeepSeek Harness Desktop 0.1.0.exe`（85.5 MB，便携版，双击即用）
+### 配置（config.json）
 
-**项目源码**位于 `D:\dev\agent\agent_dev\dsh_dev`，核心文件：
+| 字段 | 说明 |
+|---|---|
+| `harnessRoot` | dsh 检出路径（留空则由程序自动发现，可写回） |
+| `command` | 自定义启动命令（如 `["npx","@deepseek-ai/dsh","web"]`），留 `null` 走自动构建 |
+| `nodeBin` | 启动 dsh 用的 node 可执行文件名（默认 `node`） |
+| `port` | 监听端口（数字）或 `"auto"`（传 `--port 0` 并解析真实端口） |
+| `extraArgs` | 追加给 `dsh web` 的额外参数 |
+| `env` | 追加给 dsh 进程的环境变量 |
+| `window` | 主窗口宽高 |
+| `theme` | `{ enabled, name }` —— 当前主题 |
+| `pet` | 桌宠参数（宽高、`tokens` / `notify` 开关） |
 
-- `src\main.js` — Electron 主进程：窗口管理、进程生命周期、IPC（含主题设置窗口与 `dsh:theme:*` 处理器）
-- `src\server.js` — `dsh web` 控制器（拉起/解析就绪地址/日志/停止），纯 Node 可无头测试
-- `src\config.js` / `config.json` — 配置加载、默认配置与写回（`writeConfig`）
-- `src\preload.js` — 渲染层桥接（getState/onStatus/onLog/restart/quit/pet/主题设置入口）
-- `src\preload-settings.js` — 主题设置窗口桥（`dshTheme.*`）
-- `src\theme.js` — 通用主题管理器：清单/渲染/注入/素材替换/创建删除
-- `src\theme-params.js` — 主题参数系统：友好参数 ↔ 完整 token 字典展开
-- `src\detect.js` — dsh 自动检索：检出搜索 + npm 包探测（`npx @deepseek-ai/dsh`）
-- `src\userdata.js` — 可写数据覆盖层（打包版写入 userData）
-- `ui\loading.html` / `loading.css` / `loading.js` — 启动/状态/日志界面（含「部署 dsh」按钮）
-- `ui\settings.html` / `settings.css` / `settings.js` — 主题设置图形化界面（含宠物点击音效替换）
-- `assets\themes\marisa\theme.json` + `template.css` — 主题清单（参数 + 素材槽位）与参数化模板
-- `scripts\install-dsh.mjs` + `install-dsh.cmd` — dsh 一键部署脚本
-- `test\server-smoke.mjs`、`test\theme-smoke.js`、`test\detect.test.js`、`test\pet-inject.test.js` — 冒烟 / 主题 / 检索 / 注入测试
-- `README.md` — 使用与打包文档
+- **开发模式**（`npm start`）：配置读写仓库的 `config.json`
+- **打包版**（exe）：写系统 userData 目录（`%APPDATA%\dsh-desktop`），asar 内只读
 
-## 它如何工作
+### 项目结构
 
-1. 启动时先**自动定位 dsh**（见下方「dsh 部署」），再执行启动命令（默认封装 `dsh web`）
-2. 从 stdout 解析就绪行 `dsh web: http://127.0.0.1:PORT`
-3. 就绪后在原生窗口内直接加载该地址，**无需打开浏览器**
-4. 启动过程显示状态 + 实时日志；失败显示错误可一键重启；关闭窗口即停止服务进程树
-5. 带单实例锁、固定端口被占用时自动回退到系统分配端口
+```
+src/main.js            # 主进程：窗口管理、生命周期、IPC
+src/server.js          # dsh web 进程控制（拉起/解析就绪地址/日志/停止）
+src/detect.js          # dsh 自动发现（检出搜索 + npm 包探测）
+src/config.js          # 配置加载 / 写回
+src/theme.js           # 主题管理器（清单/渲染/注入/素材替换）
+src/theme-params.js    # 主题参数系统（友好参数 ↔ 完整 token 字典）
+src/pet.js             # 桌宠窗口（透明、置顶、鼠标穿透）
+src/userdata.js        # 可写数据覆盖层（打包版重定向到 userData）
+ui/                    # 渲染层：loading（启动页）/ settings（设置）/ pet（桌宠）
+assets/themes/         # 内置主题目录（cirno / rinmu / marisa）
+scripts/install-dsh.*  # dsh 一键部署脚本
+test/                  # 测试
+```
 
-## dsh 部署（自动检索 + 一键安装）
+### 常见问题（开发者）
 
-桌面壳不再依赖固定的 `harnessRoot` 路径，启动时按顺序解析 dsh：
+- **Electron 二进制下载失败**（国内网络）：设置镜像后重试
+  ```powershell
+  $env:ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
+  node node_modules/electron/install.js
+  ```
+- **打包时二进制下载失败**：设置 `ELECTRON_BUILDER_BINARIES_MIRROR = https://npmmirror.com/mirrors/electron-builder-binaries/` 后重跑 `npm run dist`
 
-1. 已配置的 `config.command`（如 `["dsh","web"]`）→ 直接使用
-2. `config.harnessRoot` 指向有效检出（含 `apps/cli/src/bin.ts`）→ 使用
-3. 在常见目录（`~/dev`、`D:/dev`、`C:/dev`、`DSH_HOME` 等，深度 ≤3，可 `DSH_SEARCH_ROOTS` 覆盖）搜索 `*harness*` / `*deepseek*` 检出
-4. 都没找到 → 探测 npm 包（`npm view @deepseek-ai/dsh`，registry 可达即可用）→ 用 `npx --yes @deepseek-ai/dsh web` 启动，**无需全局安装、无需管理员权限**
+---
 
-解析结果自动写回 `config.json`（下次启动即秒开）。全部找不到时加载界面会提示并出现 **「部署 dsh」** 按钮。
+## 📖 文档
 
-**一键部署**：仓库自带 `install-dsh.cmd`（Windows 双击）→ `scripts\install-dsh.mjs`：
-- `--npm`（默认）：`npm install -g @deepseek-ai/dsh` → 写 `config.command=["dsh","web"]`
-- `--source`：`git clone` + `npm install` 后写 `harnessRoot`
-- 打包版内点「部署 dsh」会自动在终端里运行它。
+- [THEME.md](THEME.md) — 主题系统与桌面宠物完整说明（用户 + 开发者）
 
-## 验证结果（均已实测通过）
+## 📄 许可与声明
 
-- 无头冒烟测试：`dsh web --port 0` 成功拉起 → 解析出真实端口 → `GET /` 返回 200
-- 端到端测试：真实启动 Electron 应用 → 检测到 3080 被占用自动回退 → 加载页面返回 200 → 干净退出
-- 打包：electron-builder 成功产出 portable 单文件 exe
-
-## 使用方式
-
-- **开发运行**：`cd D:\dev\agent\agent_dev\dsh_dev && npm start`
-- **重新打包**：`npm run dist`（会同时产出 NSIS 安装包与 portable 版）
-- 直接双击 `release\DeepSeek Harness Desktop 0.1.0.exe` 即可
-
-## 主题系统与桌面宠物
-
-桌面外壳内置了**可参数化主题系统**（默认「雾雨魔理沙」黑金主题，可换背景图/按钮道具图/音效）和一个透明置顶桌面宠物。**全部实现位于桌面外壳内，不改动 Harness 源码**。
-
-**主题设置图形化界面**（无需手改配置文件）：
-
-- 主界面右侧「主题」标签页 → 打开原生设置窗口
-- **创建主题**：以魔理沙为模板，输入名称即克隆；之后可调配色、换素材
-- **外观参数**：按分组改颜色/遮罩（基础/强调/文字/语义/背景），保存即实时生效（不重载页面）
-- **素材替换**：每个槽位原生文件选择器选本机图片/音频 → 自动复制并应用；支持音效试听、宠物形象替换
-- 自定义主题的 manifest 与参数展开逻辑见 `src/theme.js`、`src/theme-params.js`
-
-> 打包版（exe）里 `config.json`、自定义/被修改的主题、替换的素材与宠物形象都存储在系统 **userData 目录**（`%APPDATA%\dsh-desktop` 等，因 asar 只读）；内置主题仍作为只读默认。开发模式（`npm start`）写回仓库文件，两者自动切换。
-
-宠物 v4 能力（**轻量、无对话、无语音**）：
-
-- **静态 Marisa Fumo 形象**（单帧、无动画）、可拖拽、实时播报内存/CPU
-- **点击互动**：点一下宠物会轻轻弹跳并播放**自定义点击音效**（全局设置，设置窗口「素材替换 → 宠物点击音效」上传任意音频；未设置时用合成音）
-- **回合完成提醒**：主窗口对话完成时宠物弹「回答完毕」（只提示、不抓内容）
-- **token 用量**：头顶金色药丸实时显示本轮 `输入 / 输出` token
-- **授权提醒**：agent 请求批准时弹红色警示横幅 + 双音 + 系统通知
-- **侧边栏开关**：主界面右侧「宠」标签页，一键显示/隐藏桌宠
-
-> 对话与语音模块已按用户要求移除（问答原走 harness agent 全链路，是"慢"的唯一来源；删除后宠物交互即时）。基准：窗口创建→加载约 100ms，内存主要来自 Electron 运行时。
-
-- 开关与参数：`config.json` 的 `theme` / `pet` 字段（`theme.name` 为当前主题，切主题时自动写回；`pet.tokens/notify` 可单独关）
-- 主题/素材/数据链路/性能基准：见 [`THEME.md`](THEME.md)
-- 素材为个人学习用的同人占位，替换为你有使用权的图片与音频即可
-- 后续引入的 skill / MCP / 工具参数统一放 `assets/pet/pet_skill/`
-
+- 主题内素材为个人学习的自制占位素材，请替换为你有使用权的图片与音频后再对外分发
