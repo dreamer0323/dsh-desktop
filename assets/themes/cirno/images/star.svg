@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Placeholder: gold star (魔法星). -->
+  <path d="M32 4 L38.4 24.4 L59 27 L42 41.6 L46.6 62 L32 51 L17.4 62 L22 41.6 L5 27 L25.6 24.4 Z"
+        fill="#f6b93f" stroke="#ffe08a" stroke-width="2" stroke-linejoin="round"/>
+</svg>

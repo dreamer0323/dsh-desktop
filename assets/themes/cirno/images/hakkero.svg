@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Placeholder: mini-hakkero (八卦炉) — gold octagonal furnace. -->
+  <defs>
+    <linearGradient id="hk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffe08a"/>
+      <stop offset="55%" stop-color="#f6b93f"/>
+      <stop offset="100%" stop-color="#d9822b"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(32,32)">
+    <polygon points="0,-24 17,-17 24,0 17,17 0,24 -17,17 -24,0 -17,-17"
+             fill="url(#hk)" stroke="#2a1f42" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="0,-13 9.5,-9.5 13,0 9.5,9.5 0,13 -9.5,9.5 -13,0 -9.5,-9.5"
+             fill="#2a1f42"/>
+    <circle cx="0" cy="0" r="3.2" fill="#ffe08a"/>
+  </g>
+</svg>

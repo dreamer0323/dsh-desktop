@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Placeholder: magic mushroom (魔法蘑菇). -->
+  <g>
+    <path d="M32 30 C14 30 12 46 18 50 L46 50 C52 46 50 30 32 30 Z" fill="#ff6b6b" stroke="#ff8c8c" stroke-width="2"/>
+    <circle cx="24" cy="38" r="3" fill="#f7f1e6"/>
+    <circle cx="38" cy="36" r="2.4" fill="#f7f1e6"/>
+    <circle cx="31" cy="42" r="2.6" fill="#f7f1e6"/>
+    <rect x="28" y="50" width="8" height="9" rx="3" fill="#f7f1e6"/>
+  </g>
+</svg>
