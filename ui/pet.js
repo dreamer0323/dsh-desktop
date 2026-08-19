@@ -105,6 +105,26 @@
     if (!wasDrag && wasOnPet) onPetClick()
   })
 
+  /* Mouse pass-through (hit test): the transparent window starts with
+   * setIgnoreMouseEvents(true, {forward:true}) so clicks on the empty margins
+   * fall through to the app underneath. This listener re-enables capture the
+   * moment the cursor is over an interactive element (the pet image / bubble /
+   * pills / auth banner) and hands it back when it leaves them — the hit area
+   * therefore hugs the image instead of the whole 300x400 window. */
+  var INTERACTIVE = '.mascot, .status-bar, .bubble, .auth-banner'
+  var mouseIgnored = true
+  document.addEventListener('mousemove', function (e) {
+    if (!window.pet || !window.pet.setIgnoreMouse) return
+    var el = document.elementFromPoint(e.clientX, e.clientY)
+    var interactive = !!(el && el.closest && el.closest(INTERACTIVE))
+    window.__petMouseCapture = interactive // test hook
+    var wantIgnored = !interactive
+    if (wantIgnored !== mouseIgnored) {
+      mouseIgnored = wantIgnored
+      window.pet.setIgnoreMouse(mouseIgnored)
+    }
+  }, true)
+
   var authBanner = null
   var lastTokens = null
 

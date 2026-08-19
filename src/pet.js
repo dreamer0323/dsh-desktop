@@ -50,6 +50,17 @@ ipcMain.on('pet:drag', (_event, { dx, dy }) => {
   } catch (err) { /* ignore */ }
 })
 
+/* Pet mouse pass-through (renderer → main). The transparent window must not
+ * block clicks to the app underneath, so its margins start in "ignore" mode
+ * (see setIgnoreMouseEvents below); the renderer reports whenever the cursor
+ * is over an interactive element (pet image / bubble / pills / auth banner)
+ * and this toggles real capture back on. `forward` keeps mousemove flowing so
+ * the renderer can detect entering and leaving the pet. */
+ipcMain.on('pet:set-ignore-mouse', (_event, ignore) => {
+  if (!petWin || petWin.isDestroyed()) return
+  petWin.setIgnoreMouseEvents(!!ignore, { forward: true })
+})
+
 function createPetWindow(cfg) {
   const petCfg = (cfg && cfg.pet) || {}
   if (petCfg.enabled === false) return null
@@ -92,6 +103,12 @@ function createPetWindow(cfg) {
     petWin = null
     stopStats()
   })
+
+  // Transparent window pass-through: ignore mouse events over the transparent
+  // margins by default so they don't block the app underneath. The renderer
+  // re-enables capture (`pet:set-ignore-mouse false`) as soon as the cursor is
+  // over the pet image or one of its UI elements.
+  petWin.setIgnoreMouseEvents(true, { forward: true })
 
   void petWin.loadFile(petPath())
 

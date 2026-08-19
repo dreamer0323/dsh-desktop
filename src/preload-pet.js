@@ -25,4 +25,8 @@ contextBridge.exposeInMainWorld('pet', {
   onSound: (cb) => subscribe('pet:sound', cb),
   // JS window drag (renderer reports incremental deltas).
   drag: (dx, dy) => ipcRenderer.send('pet:drag', { dx, dy }),
+  // Mouse pass-through toggle: `true` lets clicks on the transparent margins
+  // pass through to the app underneath, `false` re-captures them over the pet
+  // image / UI. The renderer tracks the cursor position and calls this.
+  setIgnoreMouse: (ignore) => ipcRenderer.send('pet:set-ignore-mouse', !!ignore),
 })

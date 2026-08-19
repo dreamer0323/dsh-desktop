@@ -133,6 +133,25 @@ app.whenReady().then(async () => {
   const afterOff = await win.webContents.executeJavaScript('window.__petClickCount || 0')
   if (afterOff !== 1) return fail('off-image press triggered a click (count=' + afterOff + ')')
 
-  console.log('pet-render: OK (fumo static / tokens pill / auth banner / completion notice / click plays sound / drag≠click)')
+  /* Hit-area pass-through: the mouse is captured only while over the pet image
+   * (or its UI elements); over the transparent margin it must stay ignored so
+   * clicks reach the app underneath. `__petMouseCapture` is the renderer's
+   * last hit-test verdict, set on every mousemove. */
+  const hitOn = await win.webContents.executeJavaScript(`(function () {
+    var r = document.getElementById('fumo').getBoundingClientRect()
+    document.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: Math.round(r.left + r.width / 2), clientY: Math.round(r.top + r.height / 2),
+    }))
+    return window.__petMouseCapture
+  })()`)
+  if (hitOn !== true) return fail('mousemove on the image did not capture the mouse')
+
+  const hitOff = await win.webContents.executeJavaScript(`(function () {
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 10, clientY: 300 }))
+    return window.__petMouseCapture
+  })()`)
+  if (hitOff !== false) return fail('mousemove on the transparent margin did not pass through')
+
+  console.log('pet-render: OK (fumo static / tokens pill / auth banner / completion notice / click plays sound / drag≠click / hit-area pass-through)')
   app.exit(0)
 }).catch((err) => fail(err && err.message || String(err)))
