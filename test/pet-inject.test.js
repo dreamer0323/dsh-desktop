@@ -148,13 +148,18 @@ function main() {
     assert.strictEqual(typeof h.win.__DSH_DESKTOP__.play, before, 're-injection keeps existing surface')
   }
 
-  /* 5. Sidebar pet toggle tab is injected into the page. */
+  /* 5. Side rail tabs are injected into the page (pet toggle + theme settings). */
   {
-    const tab = h.body.children.find((c) => c.id === 'ds-marisa-pet-tab')
-    assert.ok(tab, 'pet toggle tab injected')
+    const rail = h.body.children.find((c) => c.id === 'ds-desk-tabs')
+    assert.ok(rail, 'side rail injected')
+    const petTab = rail.children.find((c) => c.id === 'ds-desk-pet-tab')
+    assert.ok(petTab, 'pet toggle tab injected')
+    const themeTab = rail.children.find((c) => c.id === 'ds-desk-theme-tab')
+    assert.ok(themeTab, 'theme settings tab injected')
+    assert.strictEqual(themeTab.textContent, '主题', 'theme tab labeled')
   }
 
-  console.log('pet-inject: OK (tokens / approval / turn completion / re-injection guard / sidebar tab)')
+  console.log('pet-inject: OK (tokens / approval / turn completion / re-injection guard / side rail tabs)')
 }
 
 main()

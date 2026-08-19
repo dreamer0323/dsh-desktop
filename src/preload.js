@@ -24,4 +24,6 @@ contextBridge.exposeInMainWorld('dsh', {
   togglePet: () => ipcRenderer.send('dsh:pet-toggle'),
   getPetState: () => ipcRenderer.invoke('dsh:pet-state'),
   onPetState: (cb) => subscribe('dsh:pet-state-push', cb),
+  // Open the theme settings window (injected "主题" tab).
+  openThemeSettings: () => ipcRenderer.send('dsh:open-theme-settings'),
 })

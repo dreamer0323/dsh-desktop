@@ -13,6 +13,15 @@
   var tokenPill = document.getElementById('tokenPill')
   var tokenMini = document.getElementById('tokenMini')
 
+  /* Effective pet image pushed by main (replacement lives in userData in
+   * packaged builds, where the bundled <img src> would show the default). */
+  if (window.pet && window.pet.onImage) {
+    window.pet.onImage(function (uri) {
+      var img = document.getElementById('fumo')
+      if (img && uri) img.src = uri
+    })
+  }
+
   var authBanner = null
   var lastTokens = null
 

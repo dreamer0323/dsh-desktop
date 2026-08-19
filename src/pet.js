@@ -8,14 +8,26 @@
  */
 
 const { BrowserWindow, screen } = require('electron')
+const fs = require('node:fs')
 const path = require('node:path')
 const { StatsMonitor } = require('./stats')
+const themeApi = require('./theme')
 
 let petWin = null
 let statsTimer = null
 
 function petPath() {
   return path.join(__dirname, '..', 'ui', 'pet.html')
+}
+
+/** Effective pet image as a data: URI (userData replacement, else bundled). */
+function petImageUri() {
+  try {
+    const f = themeApi.petImageFile()
+    return fs.existsSync(f) ? themeApi.toDataUri(f) : null
+  } catch (err) {
+    return null
+  }
 }
 
 function createPetWindow(cfg) {
@@ -63,10 +75,12 @@ function createPetWindow(cfg) {
 
   void petWin.loadFile(petPath())
 
-  // Hand the feature toggles to the pet window so the UI can honor them.
-  petWin.webContents.once('did-finish-load', () => {
+  // Hand the feature toggles + effective pet image to the window. Uses `.on`
+  // so a reload (after a pet-image replacement) re-pushes the fresh image.
+  petWin.webContents.on('did-finish-load', () => {
     if (petWin && !petWin.isDestroyed()) {
       try {
+        petWin.webContents.send('pet:image', petImageUri())
         petWin.webContents.send('pet:config', {
           tokens: !!(petCfg.tokens && petCfg.tokens.enabled),
           notify: !!(petCfg.notify && petCfg.notify.enabled),
@@ -138,6 +152,13 @@ function setPetVisible(visible) {
   return true
 }
 
+/** Reload the pet window so a newly replaced pet image takes effect. */
+function reloadPetWindow() {
+  if (petWin && !petWin.isDestroyed()) {
+    try { petWin.webContents.reload() } catch (err) { /* ignore */ }
+  }
+}
+
 /** Current pet visibility (true when the window exists and is shown). */
 function getPetVisible() {
   return !!petWin && !petWin.isDestroyed() && petWin.isVisible()
@@ -145,5 +166,5 @@ function getPetVisible() {
 
 module.exports = {
   createPetWindow, closePetWindow, notifyTurn, notifyPetEvent,
-  setPetVisible, getPetVisible, getPetWindow: () => petWin,
+  setPetVisible, getPetVisible, reloadPetWindow, getPetWindow: () => petWin,
 }

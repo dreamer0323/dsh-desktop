@@ -2,10 +2,20 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
+const { userDataDir } = require('./userdata')
 
 /** Root of this desktop wrapper project (one level above src/). */
 function projectRoot() {
   return path.resolve(__dirname, '..')
+}
+
+/**
+ * config.json the user actually edits / we write back to. Packaged builds run
+ * from inside the read-only asar, so writes go to userData; dev writes the
+ * repo copy (identical paths).
+ */
+function configFile() {
+  return path.join(userDataDir(), 'config.json')
 }
 
 const DEFAULTS = {
@@ -50,14 +60,21 @@ function resolveDefaults() {
   return d
 }
 
-/** Load and validate user config from <project root>/config.json. */
+/**
+ * Load and validate user config. Packaged builds fall back to the bundled
+ * (read-only) config.json until a user copy exists in userData.
+ */
 function loadConfig() {
-  const file = path.join(projectRoot(), 'config.json')
+  const file = configFile()
+  const bundled = path.join(projectRoot(), 'config.json')
+  // In dev `file === bundled`; in a fresh packaged install the user copy does
+  // not exist yet, so seed from the bundled default.
+  const source = file === bundled || fs.existsSync(file) ? file : bundled
   const defaults = resolveDefaults()
   let user = {}
-  if (fs.existsSync(file)) {
+  if (fs.existsSync(source)) {
     try {
-      user = JSON.parse(fs.readFileSync(file, 'utf8')) || {}
+      user = JSON.parse(fs.readFileSync(source, 'utf8')) || {}
     } catch (err) {
       console.error('[config] failed to parse config.json, using defaults:', err.message)
     }
@@ -85,4 +102,23 @@ function loadConfig() {
   return merged
 }
 
-module.exports = { loadConfig, projectRoot, DEFAULTS }
+/**
+ * Persist a shallow patch back to <project root>/config.json (pretty-printed).
+ * Nested sections (theme/pet) are replaced wholesale by the caller's patch.
+ * @param {object} patch
+ */
+function writeConfig(patch) {
+  const file = configFile()
+  let current = {}
+  if (fs.existsSync(file)) {
+    try {
+      current = JSON.parse(fs.readFileSync(file, 'utf8')) || {}
+    } catch (err) {
+      console.error('[config] failed to parse config.json, rewriting from patch:', err.message)
+    }
+  }
+  const next = { ...current, ...patch }
+  fs.writeFileSync(file, JSON.stringify(next, null, 2) + '\n')
+}
+
+module.exports = { loadConfig, writeConfig, projectRoot, DEFAULTS }

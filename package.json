@@ -6,7 +6,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "node test/theme-smoke.js && node test/pet-inject.test.js && node test/run-pet-render.cjs",
+    "test": "node test/theme-smoke.js && node test/userdata.test.js && node test/pet-inject.test.js && node test/run-pet-render.cjs && node test/run-settings-render.cjs",
     "test:server": "node test/server-smoke.mjs",
     "dist": "electron-builder",
     "release": "node scripts/release.mjs",

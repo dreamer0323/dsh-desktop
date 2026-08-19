@@ -82,12 +82,17 @@
 
 **项目源码**位于 `D:\dev\agent\agent_dev\dsh_dev`，核心文件：
 
-- `src\main.js` — Electron 主进程：窗口管理、进程生命周期、IPC
+- `src\main.js` — Electron 主进程：窗口管理、进程生命周期、IPC（含主题设置窗口与 `dsh:theme:*` 处理器）
 - `src\server.js` — `dsh web` 控制器（拉起/解析就绪地址/日志/停止），纯 Node 可无头测试
-- `src\config.js` / `config.json` — 配置加载与默认配置
-- `src\preload.js` — 渲染层桥接（仅暴露 getState/onStatus/onLog/restart/quit）
+- `src\config.js` / `config.json` — 配置加载、默认配置与写回（`writeConfig`）
+- `src\preload.js` — 渲染层桥接（getState/onStatus/onLog/restart/quit/pet/主题设置入口）
+- `src\preload-settings.js` — 主题设置窗口桥（`dshTheme.*`）
+- `src\theme.js` — 通用主题管理器：清单/渲染/注入/素材替换/创建删除
+- `src\theme-params.js` — 主题参数系统：友好参数 ↔ 完整 token 字典展开
 - `ui\loading.html` / `loading.css` / `loading.js` — 启动/状态/日志界面（深色主题）
-- `test\server-smoke.mjs`、`test\e2e-electron.mjs` — 冒烟 + 端到端测试
+- `ui\settings.html` / `settings.css` / `settings.js` — 主题设置图形化界面
+- `assets\themes\marisa\theme.json` + `template.css` — 主题清单（参数 + 素材槽位）与参数化模板
+- `test\server-smoke.mjs`、`test\theme-smoke.js`、`test\pet-inject.test.js` — 冒烟 / 主题 / 注入测试
 - `README.md` — 使用与打包文档
 
 ## 它如何工作
@@ -110,9 +115,19 @@
 - **重新打包**：`npm run dist`（会同时产出 NSIS 安装包与 portable 版）
 - 直接双击 `release\DeepSeek Harness Desktop 0.1.0.exe` 即可
 
-## 魔理沙主题与桌面宠物
+## 主题系统与桌面宠物
 
-桌面外壳内置了「雾雨魔理沙」主题（黑金配色 + 可换背景图 + 按钮道具图 + 事件音效）和一个透明置顶桌面宠物。**全部实现位于桌面外壳内，不改动 Harness 源码**。
+桌面外壳内置了**可参数化主题系统**（默认「雾雨魔理沙」黑金主题，可换背景图/按钮道具图/音效）和一个透明置顶桌面宠物。**全部实现位于桌面外壳内，不改动 Harness 源码**。
+
+**主题设置图形化界面**（无需手改配置文件）：
+
+- 主界面右侧「主题」标签页 → 打开原生设置窗口
+- **创建主题**：以魔理沙为模板，输入名称即克隆；之后可调配色、换素材
+- **外观参数**：按分组改颜色/遮罩（基础/强调/文字/语义/背景），保存即实时生效（不重载页面）
+- **素材替换**：每个槽位原生文件选择器选本机图片/音频 → 自动复制并应用；支持音效试听、宠物形象替换
+- 自定义主题的 manifest 与参数展开逻辑见 `src/theme.js`、`src/theme-params.js`
+
+> 打包版（exe）里 `config.json`、自定义/被修改的主题、替换的素材与宠物形象都存储在系统 **userData 目录**（`%APPDATA%\dsh-desktop` 等，因 asar 只读）；内置主题仍作为只读默认。开发模式（`npm start`）写回仓库文件，两者自动切换。
 
 宠物 v4 能力（**轻量、无对话、无语音**）：
 
@@ -124,8 +139,8 @@
 
 > 对话与语音模块已按用户要求移除（问答原走 harness agent 全链路，是"慢"的唯一来源；删除后宠物交互即时）。基准：窗口创建→加载约 100ms，内存主要来自 Electron 运行时。
 
-- 开关与参数：`config.json` 的 `theme` / `pet` 字段（`pet.tokens/notify` 可单独关）
-- 换形象（覆盖 `assets/pet/marisa-fumo.png`）、换背景 / 换音效 / 数据链路 / 性能基准：见 [`THEME.md`](THEME.md)
+- 开关与参数：`config.json` 的 `theme` / `pet` 字段（`theme.name` 为当前主题，切主题时自动写回；`pet.tokens/notify` 可单独关）
+- 主题/素材/数据链路/性能基准：见 [`THEME.md`](THEME.md)
 - 素材为个人学习用的同人占位，替换为你有使用权的图片与音频即可
 - 后续引入的 skill / MCP / 工具参数统一放 `assets/pet/pet_skill/`
 

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>主题设置</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1 class="title">主题设置</h1>
+
+      <div id="themeList" class="theme-list"></div>
+
+      <div class="create-box">
+        <input id="newThemeName" class="text" placeholder="新主题名（如 mytheme）" spellcheck="false" />
+        <button id="createBtn" class="btn">创建主题</button>
+      </div>
+      <p class="hint">以「魔理沙」为模板创建，创建后自动切换为新主题</p>
+
+      <button id="saveBtn" class="btn btn-primary" disabled>保存并应用</button>
+      <div id="toast" class="toast" hidden></div>
+    </aside>
+
+    <main class="content" id="content">
+      <div class="empty">← 从左侧选择一个主题</div>
+    </main>
+  </div>
+  <script src="settings.js"></script>
+</body>
+</html>
